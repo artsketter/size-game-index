@@ -1,18 +1,17 @@
 field,value
-title,Lantern Harbour
-original_title,灯台の港
-summary,"A cosy puzzle adventure about restoring the lights of a foggy island town."
-narrative,"You arrive as the new lighthouse keeper.
-Each night a different villager's story needs untangling."
+title,Example Game
+original_title,Original Title
+summary,This is the game summary
+narrative,This is the narrative.
 time_to_complete,5-10 hours
-tags,Puzzle|Adventure|Cosy|Story-rich
+tags,Puzzle|Adventure
 development_status,Completed
 pricing_model,Free
 game_engine,Unity
 art_rating,4
 main_art_style,Hand-painted
 mechanic_rating,3
-mechanics_description,"Light-routing puzzles with a small inventory system."
+mechanics_description,This is a description of unusual game mechanics in the game
 animation_rating,3
 size_focus,2
 game_links,https://example.com/lantern-harbour|https://example.org/mirror
@@ -25,7 +24,7 @@ last_updated,2026-08-14
 latest_content_update,Added the epilogue chapter.
 release_date,2025-03-02
 languages,English|Japanese
-recommended,yes
+recommended,no
 filtered,no
 contains_ai,no
 entry_last_updated,2026-09-29

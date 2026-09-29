@@ -1,6 +1,4 @@
-# Game Shelf
-
-Static site for GitHub Pages: push this folder to a repo, then **Settings → Pages → Deploy from branch (main, root)**.
+# Size Game Index
 
 ## Add a game
 1. Create `games/<folder-name>/` containing `game.csv` and up to 5 thumbnails.
