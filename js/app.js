@@ -11,6 +11,27 @@ const ck = {
   set(n, v) { document.cookie = n + '=' + encodeURIComponent(JSON.stringify(v)) + ';max-age=31536000;path=/;SameSite=Lax'; }
 };
 
+/* ---------- GitHub source ---------- */
+const CFG = Object.assign({ owner: '', repo: '', branch: 'main', path: 'games' }, window.GAME_REPO);
+const base = CFG.path ? CFG.path.replace(/^\/+|\/+$/g, '') + '/' : '';
+const gameUrl = (id, f) => encodeURI(`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${base}${id}/${f}`);
+const blobUrl = (id, f) => encodeURI(`https://github.com/${CFG.owner}/${CFG.repo}/blob/${CFG.branch}/${base}${id}/${f}`);
+/* One GitHub API call lists every game folder and its files; cached for 10 minutes per tab. */
+async function repoFiles() {
+  if (!CFG.owner || !CFG.repo) throw new Error('Set your GitHub repository in js/config.js.');
+  const key = 'gs-tree:' + CFG.owner + '/' + CFG.repo + '@' + CFG.branch;
+  try { const o = JSON.parse(sessionStorage.getItem(key)); if (o && Date.now() - o.t < 6e5) return o.d; } catch {}
+  const res = await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/git/trees/${encodeURIComponent(CFG.branch)}?recursive=1`);
+  if (!res.ok) throw new Error(res.status === 403 ? 'GitHub’s request limit was reached. Try again in a few minutes.' : `Could not read the repository (error ${res.status}). Games repository could not be found.`);
+  const d = {};
+  (await res.json()).tree.forEach(n => {
+    if (n.type !== 'blob' || !n.path.startsWith(base)) return;
+    const p = n.path.slice(base.length).split('/');
+    if (p.length === 2) (d[p[0]] = d[p[0]] || []).push(p[1]);
+  });
+  try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d })); } catch {}
+  return d;
+}
 /* CSV: two columns per row -> field,value (quoted values may contain commas/newlines) */
 function parseCSV(t) {
   const rows = []; let r = [], f = '', q = false;
@@ -25,24 +46,19 @@ function parseCSV(t) {
   if (f || r.length) { r.push(f); rows.push(r); }
   return rows;
 }
-async function loadGame(id) {
+async function loadGame(id, files) {
+  if (!files || !files.includes('game.csv')) return null;
   try {
-    const res = await fetch(`games/${id}/game.csv`); if (!res.ok) return null;
+    const res = await fetch(gameUrl(id, 'game.csv')); if (!res.ok) return null;
     const g = { id };
-    parseCSV(await res.text()).forEach(r => { if (r[0] && r[0].trim()) g[r[0].trim().toLowerCase()] = (r[1] || '').trim(); });
+    Object.defineProperty(g, '_files', { value: files });
+    parseCSV((await res.text()).replace(/^\uFEFF/, '')).forEach(r => { if (r[0] && r[0].trim()) g[r[0].trim().toLowerCase()] = (r[1] || '').trim(); });
     return g;
   } catch { return null; }
 }
-const loads = u => new Promise(res => { const i = new Image(); i.onload = () => res(true); i.onerror = () => res(false); i.src = u; });
-async function thumbs(g, onlyFirst) {
-  if (g.thumbnails) return list(g.thumbnails).slice(0, onlyFirst ? 1 : 5).map(f => `games/${g.id}/${f}`);
-  const out = [];
-  for (let n = 1; n <= 5; n++) {
-    let hit = null;
-    for (const e of ['jpg', 'png', 'webp']) { const u = `games/${g.id}/thumb${n}.${e}`; if (await loads(u)) { hit = u; break; } }
-    if (!hit) break; out.push(hit); if (onlyFirst) break;
-  }
-  return out;
+function thumbs(g, onlyFirst) {
+  const names = g.thumbnails ? list(g.thumbnails) : g._files.filter(n => /^thumb[1-5]\.(jpe?g|png|webp|gif|svg)$/i.test(n)).sort();
+  return names.slice(0, onlyFirst ? 1 : 5).map(n => gameUrl(g.id, n));
 }
 const bar = n => `<span class="bar" role="img" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'f' : ''}"></i>`).join('')}</span>`;
 const ring = n => {
@@ -59,11 +75,11 @@ const played = () => ck.get('played', []);
 /* ---------- HOME ---------- */
 async function home() {
   const gal = $('#gallery');
-  let ids = [];
-  try { ids = await (await fetch('games/manifest.json')).json(); } catch {}
-  const games = (await Promise.all(ids.map(loadGame))).filter(Boolean);
+  let files;
+  try { files = await repoFiles(); } catch (e) { $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
+  const games = (await Promise.all(Object.keys(files).map(id => loadGame(id, files[id])))).filter(Boolean);
   const covers = {};
-  await Promise.all(games.map(async g => covers[g.id] = (await thumbs(g, true))[0]));
+  games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   games.forEach(g => { g._tags = list(g.tags); g._hay = Object.values(g).join(' ').toLowerCase(); });
 
   const dt = v => Date.parse(v) || 0;
@@ -131,17 +147,18 @@ async function home() {
 /* ---------- GAME PAGE ---------- */
 async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
-  const g = id && await loadGame(id);
+  let g = null;
+  try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
   if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
   document.title = `${g.title || id} – Game Shelf`;
-  const imgs = await thumbs(g);
+  const imgs = thumbs(g);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
   const many = v => list(v).map(one).join(' ');
   const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${esc(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
-    (g.walkthrough ? `<a class="btn alt" href="games/${esc(id)}/${esc(g.walkthrough)}" target="_blank" rel="noopener">Walkthrough</a>` : '') +
+    (g.walkthrough ? `<a class="btn alt" href="${esc(blobUrl(id, g.walkthrough))}" target="_blank" rel="noopener">Walkthrough</a>` : '') +
     (g.creator_link ? `<a class="btn alt" href="${esc(g.creator_link)}" target="_blank" rel="noopener">Creator</a>` : '') +
     (g.forum_link ? `<a class="btn alt" href="${esc(g.forum_link)}" target="_blank" rel="noopener">Forum thread</a>` : '');
   el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a>
