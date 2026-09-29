@@ -1,0 +1,14 @@
+{
+    "version": "https://jsonfeed.org/version/1",
+    "title": "Size Game Index",
+    "description": "",
+    "home_page_url": "https:///github.com/artsketter/size-game-index",
+    "feed_url": "https:///github.com/artsketter/size-game-index/feed.json",
+    "user_comment": "",
+    "icon": "https://github.com/artsketter/size-game-index/media/website/tthinkCrop-2.png",
+    "author": {
+        "name": "Ketter"
+    },
+    "items": [
+    ]
+}
