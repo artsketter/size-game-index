@@ -1,9 +1,20 @@
-/* Game Shelf – static gallery. Works on index.html and game.html. */
+/* Static gallery. Works on index.html and game.html. */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const list = v => (v || '').split('|').map(s => s.trim()).filter(Boolean);
+/* Language name (or 2-letter code) -> flagcdn country code. */
+const FLAGS = { english:'gb', en:'gb', japanese:'jp', ja:'jp', chinese:'cn', zh:'cn', 'simplified chinese':'cn', 'traditional chinese':'tw',
+  spanish:'es', es:'es', french:'fr', fr:'fr', german:'de', de:'de', italian:'it', it:'it', portuguese:'pt', pt:'pt', 'brazilian portuguese':'br',
+  russian:'ru', ru:'ru', korean:'kr', ko:'kr', dutch:'nl', nl:'nl', polish:'pl', pl:'pl', turkish:'tr', tr:'tr', arabic:'sa', ar:'sa',
+  ukrainian:'ua', uk:'ua', swedish:'se', sv:'se', norwegian:'no', danish:'dk', finnish:'fi', czech:'cz', hungarian:'hu', greek:'gr',
+  romanian:'ro', hebrew:'il', vietnamese:'vn', thai:'th', indonesian:'id', hindi:'in' };
+const flags = v => `<span class="flags">${list(v).map(l => {
+  const code = FLAGS[l.toLowerCase().replace(/\s*\(.*\)\s*$/, '')] || FLAGS[l.toLowerCase()];
+  return code ? `<img src="https://flagcdn.com/w40/${code}.png" width="20" height="15" alt="${esc(l)}" title="${esc(l)}" loading="lazy">` : `<span class="chip">${esc(l)}</span>`;
+}).join('')}</span>`;
 const yes = v => /^(1|true|yes|x)$/i.test((v || '').trim());
 const num = (v, max) => Math.max(0, Math.min(max, parseInt(v, 10) || 0));
+const score = g => Math.round(((num(g.art_rating, 5) + num(g.mechanic_rating, 5))*2 + num(g.animation_rating, 5)) * num(g.size_focus, 3) / 75 * 100);
 
 /* cookies */
 const ck = {
@@ -22,7 +33,7 @@ async function repoFiles() {
   const key = 'gs-tree:' + CFG.owner + '/' + CFG.repo + '@' + CFG.branch;
   try { const o = JSON.parse(sessionStorage.getItem(key)); if (o && Date.now() - o.t < 6e5) return o.d; } catch {}
   const res = await fetch(`https://api.github.com/repos/${CFG.owner}/${CFG.repo}/git/trees/${encodeURIComponent(CFG.branch)}?recursive=1`);
-  if (!res.ok) throw new Error(res.status === 403 ? 'GitHub’s request limit was reached. Try again in a few minutes.' : `Could not read the repository (error ${res.status}). Games repository could not be found.`);
+  if (!res.ok) throw new Error(res.status === 403 ? 'GitHub’s request limit was reached. Try again in a few minutes.' : `Could not read the repository (error ${res.status}). Check js/config.js and that the repository is public.`);
   const d = {};
   (await res.json()).tree.forEach(n => {
     if (n.type !== 'blob' || !n.path.startsWith(base)) return;
@@ -80,32 +91,61 @@ async function home() {
   const games = (await Promise.all(Object.keys(files).map(id => loadGame(id, files[id])))).filter(Boolean);
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
-  games.forEach(g => { g._tags = list(g.tags); g._hay = Object.values(g).join(' ').toLowerCase(); });
+  const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
+    { key: 'tags', label: 'Tags', field: 'tags', any: false },
+    { key: 'interactions', label: 'Interactions', field: 'interactions', any: false },
+    { key: 'pricing', label: 'Pricing model', field: 'pricing_model', any: true },
+    { key: 'languages', label: 'Languages', field: 'languages', any: true }
+  ];
+  games.forEach(g => {
+    g._hay = Object.values(g).join(' ').toLowerCase();
+    g._tags = list(g.tags);
+    g._v = {}; SECTIONS.forEach(x => g._v[x.key] = list(g[x.field]));   /* exact, case-sensitive values */
+  });
 
   const dt = v => Date.parse(v) || 0;
   const SORTS = {
-    'Recommended': (a, b) => yes(b.recommended) - yes(a.recommended) || dt(b.entry_last_updated) - dt(a.entry_last_updated),
+    'Top score': (a, b) => score(b) - score(a),
     'Newest added': (a, b) => dt(b.creation_time) - dt(a.creation_time),
-    'Recently updated': (a, b) => dt(b.last_updated) - dt(a.last_updated),
+    'Latest content updates': (a, b) => dt(b.last_updated) - dt(a.last_updated),
     'Newest release': (a, b) => dt(b.release_date) - dt(a.release_date),
     'Best art': (a, b) => num(b.art_rating, 5) - num(a.art_rating, 5),
     'Best mechanics': (a, b) => num(b.mechanic_rating, 5) - num(a.mechanic_rating, 5),
     'A–Z': (a, b) => (a.title || '').localeCompare(b.title || '')
   };
+
+  /* Extra info shown on each card depends on the active sorting tab */
+  const line = (label, v, boxed) => v ? `<div class="meta"><span class="${boxed ? 'boxed' : ''}">${label}</span> ${esc(v)}</div>` : '';
+  const langs = g => g.languages ? `<div class="meta">${flags(g.languages)}</div>` : '';
+  const basic = g => (g.game_engine || g.languages) ? `<div class="meta split">${g.game_engine ? `<span class="engine">${esc(g.game_engine)}</span>` : '<span></span>'}${flags(g.languages)}</div>` : '';
+  const stat = (label, n) => `<div class="rate"><span>${label} ${bar(n)}</span></div>`;
+  const META = {
+    'Latest content updates': g => line('Update', g.latest_content_update, true) + line('Updated', g.last_updated, true) + langs(g),
+    'Newest release': g => line('By', g.authors) + line('Released', g.release_date) + langs(g),
+    'Best art': g => stat('Art', num(g.art_rating, 5)) + basic(g),
+    'Best mechanics': g => stat('Mechanics', num(g.mechanic_rating, 5)) + basic(g)
+  };
   let sort = Object.keys(SORTS)[0];
-  let flt = Object.assign({ inc: [], exc: [], showFiltered: false }, ck.get('filters', {}));
+  const saved = ck.get('filters', {});
+  const flt = Object.assign({ showFiltered: false, hideAI: false, hidePlayed: false }, saved);
+  SECTIONS.forEach(x => flt[x.key] = Object.assign({ inc: [], exc: [] }, flt[x.key]));
+  if (saved.inc) { flt.tags.inc = saved.inc; flt.tags.exc = saved.exc || []; delete flt.inc; delete flt.exc; }  /* old cookie format */
+  const activeCount = () => SECTIONS.reduce((n, x) => n + flt[x.key].inc.length + flt[x.key].exc.length, 0) + flt.hideAI + flt.hidePlayed;
   const q0 = new URLSearchParams(location.search).get('q'); if (q0) $('#search').value = q0;
 
   const tabs = $('#tabs'), panel = $('#filterPanel');
   const drawTabs = () => {
     tabs.innerHTML = Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
-      `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Tag filters${flt.inc.length + flt.exc.length ? ' (' + (flt.inc.length + flt.exc.length) + ')' : ''}</button>`;
+      `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>`;
   };
-  const allTags = [...new Set(games.flatMap(g => g._tags))].sort((a, b) => a.localeCompare(b));
+  const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));
   const drawPanel = () => {
-    panel.innerHTML = `<small>Click a tag once to require it, twice to hide games with it, a third time to clear. Saved in a cookie on this browser.</small>
-      <div class="chips">${allTags.map(t => `<button class="chip ${flt.inc.includes(t) ? 'inc' : flt.exc.includes(t) ? 'exc' : ''}" data-t="${esc(t)}">${esc(t)}</button>`).join('') || '<span class="chip">No tags yet</span>'}</div>
-      <div class="filter-actions"><label class="check"><input type="checkbox" id="showF" ${flt.showFiltered ? 'checked' : ''}> Show entries marked “filtered”</label><button id="clearF">Clear all</button></div>`;
+    const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
+    panel.innerHTML = `<small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small>` +
+      options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t =>
+        `<button class="chip ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}">${esc(t)}</button>`).join('') || '<span class="chip">None yet</span>'}</div></div>`).join('') +
+      `<div class="fsec"><h3>Other</h3><div class="checks">${box('hideAI', flt.hideAI, 'Hide games that contain AI')}${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}${box('showFiltered', flt.showFiltered, 'Show “hidden” games')}</div></div>
+      <div class="filter-actions"><button id="clearF">Clear all</button></div>`;
   };
   const save = () => { ck.set('filters', flt); drawTabs(); drawPanel(); render(); };
 
@@ -116,14 +156,14 @@ async function home() {
   };
   panel.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.id === 'clearF') { flt.inc = []; flt.exc = []; return save(); }
-    const t = b.dataset.t; if (!t) return;
-    if (flt.inc.includes(t)) { flt.inc = flt.inc.filter(x => x !== t); flt.exc.push(t); }
-    else if (flt.exc.includes(t)) flt.exc = flt.exc.filter(x => x !== t);
-    else flt.inc.push(t);
+    if (b.id === 'clearF') { SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] }); flt.hideAI = flt.hidePlayed = flt.showFiltered = false; return save(); }
+    const f = flt[b.dataset.k], t = b.dataset.t; if (!f || t === undefined) return;
+    if (f.inc.includes(t)) { f.inc = f.inc.filter(x => x !== t); f.exc.push(t); }
+    else if (f.exc.includes(t)) f.exc = f.exc.filter(x => x !== t);
+    else f.inc.push(t);
     save();
   };
-  panel.onchange = e => { if (e.target.id === 'showF') { flt.showFiltered = e.target.checked; save(); } };
+  panel.onchange = e => { if (['hideAI', 'hidePlayed', 'showFiltered'].includes(e.target.id)) { flt[e.target.id] = e.target.checked; save(); } };
   $('#search').addEventListener('input', render);
   $('#brand').addEventListener('click', e => { e.preventDefault(); location.href = 'index.html'; location.reload(); });
 
@@ -132,13 +172,17 @@ async function home() {
     const done = new Set(played());
     const shown = games.filter(g =>
       (flt.showFiltered || !yes(g.filtered)) &&
-      flt.inc.every(t => g._tags.includes(t)) && !flt.exc.some(t => g._tags.includes(t)) &&
+      !(flt.hideAI && yes(g.contains_ai)) && !(flt.hidePlayed && done.has(g.id)) &&
+      SECTIONS.every(x => {
+        const f = flt[x.key], v = g._v[x.key];
+        return (!f.inc.length || (x.any ? f.inc.some(t => v.includes(t)) : f.inc.every(t => v.includes(t)))) && !f.exc.some(t => v.includes(t));
+      }) &&
       terms.every(t => g._hay.includes(t))
     ).sort(SORTS[sort]);
     gal.innerHTML = shown.map(g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
-        ${yes(g.recommended) ? '<span class="flag">Recommended</span>' : ''}${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
-      <div class="body"><h3>${esc(g.title || g.id)}</h3>${chips(g._tags.slice(0, 4))}<p class="sum">${esc(g.summary)}</p>${ratings(g)}</div></a>`).join('');
+        ${score(g) > 60 ? `<span class="flag score" title="Score ${score(g)} / 100">★ ${score(g)}</span>` : ''}${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
+      <div class="body"><h3>${esc(g.title || g.id)}</h3>${chips(g._tags.slice(0, 4))}<p class="sum">${esc(g.summary)}</p>${(META[sort] || basic)(g)}</div></a>`).join('');
     $('#empty').hidden = shown.length > 0;
   }
   drawTabs(); drawPanel(); panel.hidden = true; drawTabs(); render();
@@ -171,11 +215,11 @@ async function gamePage() {
       <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
       <section class="panel">${ratings(g)}</section>
       <section class="panel"><dl>
-        ${row('Time to complete', one(g.time_to_complete))}${row('Tags', many(g.tags))}${row('Status', one(g.development_status))}
+        ${row('Score', score(g) + ' / 100')}${row('Time to complete', one(g.time_to_complete))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
         ${row('Pricing', one(g.pricing_model))}${row('Engine', one(g.game_engine))}${row('Art style', one(g.main_art_style))}
-        ${row('Languages', many(g.languages))}${row('Authors', esc(g.authors))}${row('Author tags', many(g.author_tags))}
+        ${row('Languages', many(g.languages))}${row('Authors', esc(g.authors))}
         ${row('Release date', esc(g.release_date))}${row('Last updated', esc(g.last_updated))}${row('Latest update', esc(g.latest_content_update))}
-        ${row('Contains AI', yes(g.contains_ai) ? 'Yes' : 'No')}${row('Recommended', yes(g.recommended) ? 'Yes' : '')}
+        ${row('Contains AI', yes(g.contains_ai) ? 'Yes' : 'No')}
         ${row('Entry updated', esc(g.entry_last_updated))}${row('Entry created', esc(g.creation_time))}
       </dl></section>
       ${links ? `<section class="panel links">${links}</section>` : ''}
