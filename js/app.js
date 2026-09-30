@@ -105,9 +105,9 @@ async function home() {
 
   const dt = v => Date.parse(v) || 0;
   const SORTS = {
+    'Latest content updates': (a, b) => dt(b.last_updated) - dt(a.last_updated),
     'Top score': (a, b) => score(b) - score(a),
     'Newest added': (a, b) => dt(b.creation_time) - dt(a.creation_time),
-    'Latest content updates': (a, b) => dt(b.last_updated) - dt(a.last_updated),
     'Newest release': (a, b) => dt(b.release_date) - dt(a.release_date),
     'Best art': (a, b) => num(b.art_rating, 5) - num(a.art_rating, 5),
     'Best mechanics': (a, b) => num(b.mechanic_rating, 5) - num(a.mechanic_rating, 5),
@@ -194,7 +194,7 @@ async function gamePage() {
   let g = null;
   try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
   if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
-  document.title = `${g.title || id} – Game Shelf`;
+  document.title = `${g.title || id} – Size Game Index`;
   const imgs = thumbs(g);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
