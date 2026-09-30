@@ -106,12 +106,12 @@ async function home() {
   const dt = v => Date.parse(v) || 0;
   const SORTS = {
     'Latest content updates': (a, b) => dt(b.last_updated) - dt(a.last_updated),
-    'Top score': (a, b) => score(b) - score(a),
     'Newest added': (a, b) => dt(b.creation_time) - dt(a.creation_time),
     'Newest release': (a, b) => dt(b.release_date) - dt(a.release_date),
-    'Best art': (a, b) => num(b.art_rating, 5) - num(a.art_rating, 5),
-    'Best mechanics': (a, b) => num(b.mechanic_rating, 5) - num(a.mechanic_rating, 5),
-    'A–Z': (a, b) => (a.title || '').localeCompare(b.title || '')
+    'Great art': (a, b) => num(b.art_rating, 5) - num(a.art_rating, 5),
+    'Great mechanics': (a, b) => num(b.mechanic_rating, 5) - num(a.mechanic_rating, 5),
+    'A–Z': (a, b) => (a.title || '').localeCompare(b.title || ''),
+    'Recommended': (a, b) => score(b) - score(a)
   };
 
   /* Extra info shown on each card depends on the active sorting tab */
@@ -122,8 +122,8 @@ async function home() {
   const META = {
     'Latest content updates': g => line('Update', g.latest_content_update, true) + line('Updated', g.last_updated, true) + langs(g),
     'Newest release': g => line('By', g.authors) + line('Released', g.release_date) + langs(g),
-    'Best art': g => stat('Art', num(g.art_rating, 5)) + basic(g),
-    'Best mechanics': g => stat('Mechanics', num(g.mechanic_rating, 5)) + basic(g)
+    'Great art': g => stat('Art', num(g.art_rating, 5)) + basic(g),
+    'Great mechanics': g => stat('Mechanics', num(g.mechanic_rating, 5)) + basic(g)
   };
   let sort = Object.keys(SORTS)[0];
   const saved = ck.get('filters', {});
@@ -181,7 +181,7 @@ async function home() {
     ).sort(SORTS[sort]);
     gal.innerHTML = shown.map(g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
-        ${score(g) > 60 ? `<span class="flag score" title="Score ${score(g)} / 100">★ ${score(g)}</span>` : ''}${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
+        ${score(g) > 60 ? `<span class="flag score">★ Recommended` : ''}${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
       <div class="body"><h3>${esc(g.title || g.id)}</h3>${chips(g._tags.slice(0, 4))}<p class="sum">${esc(g.summary)}</p>${(META[sort] || basic)(g)}</div></a>`).join('');
     $('#empty').hidden = shown.length > 0;
   }
@@ -215,7 +215,7 @@ async function gamePage() {
       <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
       <section class="panel">${ratings(g)}</section>
       <section class="panel"><dl>
-        ${row('Score', score(g) + ' / 100')}${row('Time to complete', one(g.time_to_complete))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
+        ${row('Time to complete', one(g.time_to_complete))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
         ${row('Pricing', one(g.pricing_model))}${row('Engine', one(g.game_engine))}${row('Art style', one(g.main_art_style))}
         ${row('Languages', many(g.languages))}${row('Authors', esc(g.authors))}
         ${row('Release date', esc(g.release_date))}${row('Last updated', esc(g.last_updated))}${row('Latest update', esc(g.latest_content_update))}

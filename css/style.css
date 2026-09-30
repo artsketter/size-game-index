@@ -51,7 +51,7 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .meta span.engine{background:#c0392b;color:#fff;font-weight:600;font-size:.8rem;padding:.05rem .55rem;border-radius:4px;margin:0}
 .flags{display:inline-flex;flex-wrap:wrap;gap:.3rem;align-items:center}
 .flags img{display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
-.flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color:var(--bg);font:600 1.5rem var(--body);padding:.1rem .55rem;border-radius:999px}
+.flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color:var(--bg);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
 .flag.score{background:var(--good);font-weight:700;letter-spacing:.02em}
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
 /* ratings */
