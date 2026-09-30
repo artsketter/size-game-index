@@ -40,7 +40,7 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .card:hover{border-color:var(--accent)}
 .thumb{position:relative;aspect-ratio:16/10;background:var(--panel2) center/cover no-repeat}
 .thumb.none::after{content:"No image";position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
-.played{position:absolute;top:.5rem;right:.5rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--good);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:.95rem}
+.played{position:absolute;top:.5rem;right:.5rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--good);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:.95rem;outline:1px dotted var(--line)}
 .card .body{padding:.8rem 1rem 1rem;display:flex;flex-direction:column;gap:.5rem}
 .card h3{font-size:1.15rem}
 .card .sum{color:var(--muted);font-size:.9rem;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -52,7 +52,7 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .flags{display:inline-flex;flex-wrap:wrap;gap:.3rem;align-items:center}
 .flags img{display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color:var(--bg);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
-.flag.score{background:var(--good);font-weight:700;letter-spacing:.02em}
+.flag.score{background:var(--good);font-weight:700;letter-spacing:.02em;outline:1px dotted var(--line)}
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
 /* ratings */
 .bar{display:inline-flex;gap:3px;vertical-align:middle}
