@@ -94,6 +94,7 @@ async function home() {
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
     { key: 'tags', label: 'Tags', field: 'tags', any: false },
     { key: 'interactions', label: 'Interactions', field: 'interactions', any: false },
+    { key: 'art_style', label: 'Art Style', field: 'main_art_style', any: false },
     { key: 'pricing', label: 'Pricing model', field: 'pricing_model', any: true },
     { key: 'languages', label: 'Languages', field: 'languages', any: true }
   ];
