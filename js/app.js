@@ -128,7 +128,8 @@ async function home() {
     'Great art': g => stat('Art', num(g.art_rating, 5)) + basic(g),
     'Great mechanics': g => stat('Mechanics', num(g.mechanic_rating, 5)) + basic(g)
   };
-  let sort = Object.keys(SORTS)[0];
+  let sort = ck.get('sort', null);
+  if (!SORTS[sort]) sort = Object.keys(SORTS)[0];
   const saved = ck.get('filters', {});
   const flt = Object.assign({ showFiltered: false, hideAI: false, hidePlayed: false }, saved);
   SECTIONS.forEach(x => flt[x.key] = Object.assign({ inc: [], exc: [] }, flt[x.key]));
@@ -157,7 +158,10 @@ async function home() {
 
   tabs.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.f) { panel.hidden = !panel.hidden; } else sort = b.dataset.s;
+    if (b.dataset.f) 
+      { panel.hidden = !panel.hidden; } 
+    else 
+      { sort = b.dataset.s; ck.set('sort', sort); }
     drawTabs(); render();
   };
   panel.onclick = e => {
