@@ -92,6 +92,7 @@ async function home() {
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
+    { key: 'size_types', label: 'Size Category', field: 'size_category', any: false },
     { key: 'tags', label: 'Tags', field: 'tags', any: false },
     { key: 'interactions', label: 'Interactions', field: 'interactions', any: false },
     { key: 'art_style', label: 'Art Style', field: 'main_art_style', any: false },
@@ -216,7 +217,7 @@ async function gamePage() {
       <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
       <section class="panel">${ratings(g)}</section>
       <section class="panel"><dl>
-        ${row('Time to complete', one(g.time_to_complete))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
+        ${row('Time to complete', one(g.time_to_complete))}${row('Size Category', many(g.size_category))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
         ${row('Pricing', one(g.pricing_model))}${row('Engine', one(g.game_engine))}${row('Art style', one(g.main_art_style))}
         ${row('Languages', many(g.languages))}${row('Authors', esc(g.authors))}
         ${row('Release date', esc(g.release_date))}${row('Last updated', esc(g.last_updated))}${row('Latest update', esc(g.latest_content_update))}
