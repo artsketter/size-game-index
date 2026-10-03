@@ -119,7 +119,7 @@ async function home() {
 
   /* Extra info shown on each card depends on the active sorting tab */
   const line = (label, v, boxed) => v ? `<div class="meta"><span class="${boxed ? 'boxed' : ''}">${label}</span> ${esc(v)}</div>` : '';
-  const langs = g => g.languages ? `<div class="meta">${flags(g.languages)}</div>` : '';
+  const langs = g => g.languages ? `<div class="meta flagrow">${flags(g.languages)}</div>` : '';
   const basic = g => (g.game_engine || g.languages) ? `<div class="meta split">${g.game_engine ? `<span class="engine">${esc(g.game_engine)}</span>` : '<span></span>'}${flags(g.languages)}</div>` : '';
   const stat = (label, n) => `<div class="rate"><span>${label} ${bar(n)}</span></div>`;
   const META = {
