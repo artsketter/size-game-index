@@ -101,6 +101,7 @@ async function home() {
   ];
   games.forEach(g => {
     g._hay = Object.values(g).join(' ').toLowerCase();
+    g._size_category = list(g.size_category);
     g._tags = list(g.tags);
     g._v = {}; SECTIONS.forEach(x => g._v[x.key] = list(g[x.field]));   /* exact, case-sensitive values */
   });
@@ -146,7 +147,10 @@ async function home() {
     panel.innerHTML = `<small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small>` +
       options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t =>
         `<button class="chip ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}">${esc(t)}</button>`).join('') || '<span class="chip">None yet</span>'}</div></div>`).join('') +
-      `<div class="fsec"><h3>Other</h3><div class="checks">${box('hideAI', flt.hideAI, 'Hide games that contain AI')}${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}${box('showFiltered', flt.showFiltered, 'Show “hidden” games')}</div></div>
+      `<div class="fsec"><h3>Other</h3><div class="checks">
+        ${box('hideAI', flt.hideAI, 'Hide games that contain AI')}
+        ${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}
+        ${box('showFiltered', flt.showFiltered, 'Show “hidden” games')}</div></div>
       <div class="filter-actions"><button id="clearF">Clear all</button></div>`;
   };
   const save = () => { ck.set('filters', flt); drawTabs(); drawPanel(); render(); };
@@ -183,8 +187,18 @@ async function home() {
     ).sort(SORTS[sort]);
     gal.innerHTML = shown.map(g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
-        ${score(g) > 60 ? `<span class="flag score">★ Recommended` : ''}${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
-      <div class="body"><h3>${esc(g.title || g.id)}</h3>${chips(g._tags.slice(0, 4))}<p class="sum">${esc(g.summary)}</p>${(META[sort] || basic)(g)}</div></a>`).join('');
+        ${score(g) > 60 ? `<span class="flag score">★ Recommended` : ''}
+        ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
+      <div class="body">
+        <h3>${esc(g.title || g.id)}</h3>
+        ${chips([
+          ...g._size_category.slice(0, 3),
+          ...g._tags.slice(0, 5)
+        ].filter(Boolean))}
+        <p class="sum">${esc(g.summary)}</p>
+        ${(META[sort] || basic)(g)}
+      </div>
+      </a>`).join('');
     $('#empty').hidden = shown.length > 0;
   }
   drawTabs(); drawPanel(); panel.hidden = true; drawTabs(); render();
@@ -212,17 +226,29 @@ async function gamePage() {
     <div class="layout"><div>
       ${imgs.length ? `<div class="stage" id="stage" style="background-image:url('${esc(imgs[0])}')"></div>
       <div class="strip">${imgs.map((u, i) => `<button class="${i ? '' : 'on'}" data-u="${esc(u)}" style="background-image:url('${esc(u)}')" aria-label="Image ${i + 1}"></button>`).join('')}</div>` : '<div class="stage"></div>'}
-      ${block('Summary', g.summary)}${block('Narrative', g.narrative)}${block('Mechanics', g.mechanics_description)}
+      ${block('Summary', g.summary)}
+      ${block('Narrative', g.narrative)}
+      ${block('Mechanics', g.mechanics_description)}
     </div><aside>
       <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
       <section class="panel">${ratings(g)}</section>
       <section class="panel"><dl>
-        ${row('Time to complete', one(g.time_to_complete))}${row('Size Category', many(g.size_category))}${row('Tags', many(g.tags))}${row('Interactions', many(g.interactions))}${row('Status', one(g.development_status))}
-        ${row('Pricing', one(g.pricing_model))}${row('Engine', one(g.game_engine))}${row('Art style', one(g.main_art_style))}
-        ${row('Languages', many(g.languages))}${row('Authors', esc(g.authors))}
-        ${row('Release date', esc(g.release_date))}${row('Last updated', esc(g.last_updated))}${row('Latest update', esc(g.latest_content_update))}
+        ${row('Time to complete', one(g.time_to_complete))}
+        ${row('Size Category', many(g.size_category))}
+        ${row('Tags', many(g.tags))}
+        ${row('Interactions', many(g.interactions))}
+        ${row('Status', one(g.development_status))}
+        ${row('Pricing', one(g.pricing_model))}
+        ${row('Engine', one(g.game_engine))}
+        ${row('Art style', one(g.main_art_style))}
+        ${row('Languages', many(g.languages))}
+        ${row('Authors', esc(g.authors))}
+        ${row('Release date', esc(g.release_date))}
+        ${row('Last updated', esc(g.last_updated))}
+        ${row('Latest update', esc(g.latest_content_update))}
         ${row('Contains AI', yes(g.contains_ai) ? 'Yes' : 'No')}
-        ${row('Entry updated', esc(g.entry_last_updated))}${row('Entry created', esc(g.creation_time))}
+        ${row('Entry updated', esc(g.entry_last_updated))}
+        ${row('Entry created', esc(g.creation_time))}
       </dl></section>
       ${links ? `<section class="panel links">${links}</section>` : ''}
     </aside></div>`;
