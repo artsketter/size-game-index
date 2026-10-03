@@ -125,6 +125,7 @@ async function home() {
   const META = {
     'Latest content updates': g => line('Update', g.latest_content_update, true) + line('Updated', g.last_updated, true) + langs(g),
     'Newest release': g => line('By', g.authors) + line('Released', g.release_date) + langs(g),
+    'Newest added': g => line('Added', g.creation_time) + basic(g),
     'Great art': g => stat('Art', num(g.art_rating, 5)) + basic(g),
     'Great mechanics': g => stat('Mechanics', num(g.mechanic_rating, 5)) + basic(g)
   };
@@ -177,19 +178,12 @@ async function home() {
   $('#search').addEventListener('input', render);
   $('#brand').addEventListener('click', e => { e.preventDefault(); location.href = 'index.html'; location.reload(); });
 
-  function render() {
-    const terms = $('#search').value.toLowerCase().split(/\s+/).filter(Boolean);
-    const done = new Set(played());
-    const shown = games.filter(g =>
-      (flt.showFiltered || !yes(g.filtered)) &&
-      !(flt.hideAI && yes(g.contains_ai)) && !(flt.hidePlayed && done.has(g.id)) &&
-      SECTIONS.every(x => {
-        const f = flt[x.key], v = g._v[x.key];
-        return (!f.inc.length || (x.any ? f.inc.some(t => v.includes(t)) : f.inc.every(t => v.includes(t)))) && !f.exc.some(t => v.includes(t));
-      }) &&
-      terms.every(t => g._hay.includes(t))
-    ).sort(SORTS[sort]);
-    gal.innerHTML = shown.map(g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
+  /* Show games in chunks of CHUNK; the next chunk loads automatically when the visitor scrolls near the bottom */
+  const CHUNK = 'IntersectionObserver' in window ? 64 : Infinity;   /* very old browsers get everything at once */
+  const sentinel = gal.insertAdjacentElement('afterend', Object.assign(document.createElement('div'), { id: 'sentinel', style: 'height:1px' }));
+  const oldBtn = $('#more'); if (oldBtn) oldBtn.remove();
+  let shownList = [], shownCount = 0, done = new Set();
+  const card = g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
         ${score(g) > 60 ? `<span class="flag score">★ Recommended` : ''}
         ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
@@ -202,7 +196,33 @@ async function home() {
         <p class="sum">${esc(g.summary)}</p>
         ${(META[sort] || basic)(g)}
       </div>
-      </a>`).join('');
+      </a>`;
+  function addChunk() {
+    const next = shownList.slice(shownCount, shownCount + CHUNK);
+    shownCount += next.length;
+    gal.insertAdjacentHTML('beforeend', next.map(card).join(''));
+    if (!io) return;
+    io.unobserve(sentinel);
+    if (shownCount < shownList.length) io.observe(sentinel);   /* re-check: loads again at once if the page is still too short */
+  }
+  const io = CHUNK === Infinity ? null : new IntersectionObserver(es => { if (es[0].isIntersecting) addChunk(); }, { rootMargin: '800px' });
+
+  function render() {
+    const terms = $('#search').value.toLowerCase().split(/\s+/).filter(Boolean);
+    done = new Set(played());
+    const shown = games.filter(g =>
+      (flt.showFiltered || !yes(g.filtered)) &&
+      !(flt.hideAI && yes(g.contains_ai)) && !(flt.hidePlayed && done.has(g.id)) &&
+      SECTIONS.every(x => {
+        const f = flt[x.key], v = g._v[x.key];
+        return (!f.inc.length || (x.any ? f.inc.some(t => v.includes(t)) : f.inc.every(t => v.includes(t)))) && !f.exc.some(t => v.includes(t));
+      }) &&
+      terms.every(t => g._hay.includes(t))
+    ).sort(SORTS[sort]);
+    shownList = shown;
+    shownCount = 0;
+    gal.innerHTML = '';
+    addChunk();
     $('#empty').hidden = shown.length > 0;
   }
   drawTabs(); drawPanel(); panel.hidden = true; drawTabs(); render();
