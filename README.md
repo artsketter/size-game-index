@@ -2,6 +2,6 @@ Size Game Index site
 
 ## Notes
 
-- Cookies: `filters` (tag filters) and `played` (played-before list).
+- Cookies: `filters` (tag filters), `sort` (sorting mode) and `played` (played-before list).
 
-- All styling lives in `css/style.css`.
+- All styling is in `css/style.css`.

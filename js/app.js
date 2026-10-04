@@ -207,6 +207,11 @@ async function home() {
   }
   const io = CHUNK === Infinity ? null : new IntersectionObserver(es => { if (es[0].isIntersecting) addChunk(); }, { rootMargin: '800px' });
 
+    /* Remember gallery state when leaving, so the browser's Back button can restore it */
+    history.scrollRestoration = 'manual';
+    addEventListener('pagehide', () => { try { sessionStorage.setItem('gallery-state',
+    JSON.stringify({ y: scrollY, n: shownCount, q: $('#search').value, sort })); } catch {} });
+  
   function render() {
     const terms = $('#search').value.toLowerCase().split(/\s+/).filter(Boolean);
     done = new Set(played());
@@ -225,7 +230,17 @@ async function home() {
     addChunk();
     $('#empty').hidden = shown.length > 0;
   }
+  let st = null;
+  const nav = performance.getEntriesByType('navigation')[0];
+  if (nav && nav.type === 'back_forward') { try { st = JSON.parse(sessionStorage.getItem('gallery-state')); } catch {} }
+  if (st) { $('#search').value = st.q || ''; if (SORTS[st.sort]) sort = st.sort; }
+
   drawTabs(); drawPanel(); panel.hidden = true; drawTabs(); render();
+
+  if (st) {
+    while (shownCount < Math.min(st.n, shownList.length)) addChunk();
+    window.scrollTo(0, st.y);
+  }
 }
 
 /* ---------- GAME PAGE ---------- */
@@ -286,3 +301,15 @@ async function gamePage() {
 }
 
 $('#game') ? gamePage() : home();
+
+/* "Back to gallery" acts like the browser's Back button when the visitor came from the gallery */
+document.addEventListener('click', e => {
+  if (!e.target.closest('a.back')) return;
+  try {
+    const ref = new URL(document.referrer);
+    if (history.length > 1 && ref.origin === location.origin && !ref.pathname.endsWith('game.html')) {
+      e.preventDefault();
+      history.back();
+    }
+  } catch {}
+});
