@@ -1,4 +1,4 @@
-Size Game Index site
+Size Game Index site (you aren't supposed to download this you clods, just go to https://sizegameindex.fyi)
 
 ## Notes
 
