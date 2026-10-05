@@ -185,8 +185,9 @@ async function home() {
   let shownList = [], shownCount = 0, done = new Set();
   const card = g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
-        ${score(g) > 60 ? `<span class="flag score">★ Recommended` : ''}
-        ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}</div>
+        ${score(g) > 60 ? `<span class="flag score">★ Recommended</span>` : ''}
+        ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}
+      </div>
       <div class="body">
         <h3>${esc(g.title || g.id)}</h3>
         ${chips([
