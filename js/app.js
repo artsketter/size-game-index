@@ -244,6 +244,31 @@ async function home() {
   }
 }
 
+/* ---------- Rating descriptions ---------- */
+/* descriptions/rating_desc.csv in the games repository. Columns: field, description, 0, 1, 2, 3, 4, 5 */
+async function loadRatingDescriptions() {
+  const root = `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/`;
+  for (const url of [root + 'descriptions/rating_desc.csv', root + base + 'descriptions/rating_desc.csv']) {
+    try {
+      const res = await fetch(url); if (!res.ok) continue;
+      const out = {};
+      parseCSV((await res.text()).replace(/^\uFEFF/, '')).slice(1).forEach(r => {
+        const k = (r[0] || '').trim().toLowerCase(); if (!k) return;
+        out[k] = { title: (r[1] || '').trim(), levels: r.slice(2, 8).map(x => (x || '').trim()) };
+      });
+      return out;
+    } catch (e) { console.warn('Rating descriptions failed to load:', url, e); }
+  }
+  return {};   /* no file found: ratings simply have no tooltip */
+}
+const ratingsTip = (g, D) => `<div class="rate">${[
+  ['Art', 'art_rating', 5, bar], ['Mechanics', 'mechanic_rating', 5, bar], ['Animation', 'animation_rating', 5, bar], ['Size focus', 'size_focus', 3, ring]
+].map(([label, key, max, draw]) => {
+  const n = num(g[key], max), d = D[key];
+  const tip = d ? [d.title, d.levels[n] ? `${n}/${max}: ${d.levels[n]}` : `${n}/${max}`].filter(Boolean).join('\n') : '';
+  return `<span${tip ? ` class="tip" tabindex="0" data-tip="${esc(tip)}"` : ''}>${label} ${draw(n)}</span>`;
+}).join('')}</div>`;
+
 /* ---------- GAME PAGE ---------- */
 async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
@@ -251,6 +276,7 @@ async function gamePage() {
   try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
   if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
   document.title = `${g.title || id} – Size Game Index`;
+  const D = await loadRatingDescriptions();
   const imgs = thumbs(g);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
@@ -271,7 +297,7 @@ async function gamePage() {
       ${block('Mechanics', g.mechanics_description)}
     </div><aside>
       <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
-      <section class="panel">${ratings(g)}</section>
+      <section class="panel">${ratingsTip(g, D)}</section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
         ${row('Size Category', many(g.size_category))}
