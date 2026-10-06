@@ -80,7 +80,7 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 
 /* tooltips */
 .tip{position:relative;cursor:help}
-.tip::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 8px);width:max-content;max-width:260px;white-space:pre-line;background:#0b171d;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:.5rem .7rem;font-size:.85rem;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.4);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:20}
+.tip::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 8px);width:max-content;max-width:260px;white-space:pre-line;background:#0b171d;color:#e8efe9;border:1px solid var(--line);border-radius:6px;padding:.5rem .7rem;font-size:.85rem;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.4);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s,transform .15s;pointer-events:none;z-index:20}
 .tip:hover::after,.tip:focus::after{opacity:1;visibility:visible;transform:none}
 .tip:nth-child(n+3)::after{left:auto;right:0}
 
