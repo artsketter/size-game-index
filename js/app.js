@@ -2,7 +2,8 @@
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const list = v => (v || '').split('|').map(s => s.trim()).filter(Boolean);
-/* Language name (or 2-letter code) -> flagcdn country code. */
+
+/* Map language name (or 2-letter code) to flagcdn country code. */
 const FLAGS = { english:'gb', en:'gb', japanese:'jp', ja:'jp', chinese:'cn', zh:'cn', 'simplified chinese':'cn', 'traditional chinese':'tw',
   spanish:'es', es:'es', french:'fr', fr:'fr', german:'de', de:'de', italian:'it', it:'it', portuguese:'pt', pt:'pt', 'brazilian portuguese':'br',
   russian:'ru', ru:'ru', korean:'kr', ko:'kr', dutch:'nl', nl:'nl', polish:'pl', pl:'pl', turkish:'tr', tr:'tr', arabic:'sa', ar:'sa',
@@ -27,6 +28,7 @@ const CFG = Object.assign({ owner: '', repo: '', branch: 'main', path: 'games' }
 const base = CFG.path ? CFG.path.replace(/^\/+|\/+$/g, '') + '/' : '';
 const gameUrl = (id, f) => encodeURI(`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${base}${id}/${f}`);
 const blobUrl = (id, f) => encodeURI(`https://github.com/${CFG.owner}/${CFG.repo}/blob/${CFG.branch}/${base}${id}/${f}`);
+
 /* One GitHub API call lists every game folder and its files; cached for 10 minutes per tab. */
 async function repoFiles() {
   if (!CFG.owner || !CFG.repo) throw new Error('Set your GitHub repository in js/config.js.');
@@ -341,3 +343,20 @@ document.addEventListener('click', e => {
     }
   } catch {}
 });
+
+/* Dark mode toggle */
+(() => {
+  const btn = $('#themeToggle'); if (!btn) return;
+  const root = document.documentElement;
+  const sync = () => {
+    const dark = root.dataset.theme !== 'light';
+    btn.textContent = dark ? '☀' : '☾';
+    btn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  };
+  btn.onclick = () => {
+    root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+    sync();
+  };
+  sync();
+})();

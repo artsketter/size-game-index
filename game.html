@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Game – Size Game Index</title>
 <link rel="icon" href="tthinkCrop.png">
+  
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'dark'}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="navbar">
   <a class="brand" href="index.html"><img src="tthinkCrop.png" alt="" width="34" height="34"><span>Size Game Index</span></a>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
 </header>
 <main id="game" class="game"></main>
 <script src="js/config.js"></script>

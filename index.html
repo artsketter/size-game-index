@@ -15,12 +15,17 @@
 <meta name="theme-color" content="#262626">
 <title>Size Game Index</title>
 <link rel="icon" href="tthinkCrop.png">
+  
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'dark'}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="navbar">
   <a class="brand" href="index.html" id="brand"><img src="tthinkCrop.png" alt="" width="34" height="34"><span>Size Game Index</span></a>
+<div class="nav-right">
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
   <input id="search" type="search" placeholder="Search titles, tags, keywords…" aria-label="Search games">
+</div>
 </header>
 <main id="home">
   <section class="intro">
