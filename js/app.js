@@ -263,10 +263,11 @@ async function loadRatingDescriptions() {
 }
 const ratingsTip = (g, D) => `<div class="rate">${[
   ['Art', 'art_rating', 5, bar], ['Mechanics', 'mechanic_rating', 5, bar], ['Animation', 'animation_rating', 5, bar], ['Size focus', 'size_focus', 3, ring]
-].map(([label, key, max, draw]) => {
-  const n = num(g[key], max), d = D[key];
-  const tip = d ? [d.title, d.levels[n] ? `${n}/${max}: ${d.levels[n]}` : `${n}/${max}`].filter(Boolean).join('\n') : '';
-  return `<span${tip ? ` class="tip" tabindex="0" data-tip="${esc(tip)}"` : ''}>${label} ${draw(n)}</span>`;
+].filter(([, key]) => !(key === 'animation_rating' && /^\s*0\s*$/.test(g[key] || ''))).map(([label, key, max, draw]) => {
+  const val = (g[key] || '').trim(), has = val !== '' && !isNaN(parseInt(val, 10));   /* an empty cell is "not assessed", not 0 */
+  const n = num(val, max), d = D[key];
+  const tip = d ? [d.title, !has ? 'Not yet assessed' : d.levels[n] ? `${n}/${max}: ${d.levels[n]}` : `${n}/${max}`].filter(Boolean).join('\n') : '';
+  return `<span${tip ? ` class="tip" tabindex="0" data-tip="${esc(tip)}"` : ''}>${label} ${has ? draw(n) : '<em class="na">Not yet assessed</em>'}</span>`;
 }).join('')}</div>`;
 
 /* ---------- GAME PAGE ---------- */
