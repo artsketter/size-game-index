@@ -1,11 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap');
-:root{--bg:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;--text:#e8efe9;--muted:#9db5b9;--accent:#f2b84b;--good:#7fd1a0;--bad:#ef7d6a;--r:10px;
---head:'Bricolage Grotesque','Trebuchet MS',sans-serif;--body:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;--nav:64px}
+:root{
+  --bg:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;
+  --text:#e8efe9;--muted:#9db5b9;--accent:#f2b84b;
+  --good:#7fd1a0;--bad:#ef7d6a;--r:10px;--flag:#191919;
+  --head:'Bricolage Grotesque','Trebuchet MS',sans-serif;--body:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;--nav:64px}
 *{box-sizing:border-box}
 :root{color-scheme:dark;--ink:#10222b}
 :root[data-theme="light"]{color-scheme:light;
-  --bg:#f4f1ea;--panel:#ffffff;--panel2:#ece7da;--line:#d6cfbd;
-  --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;--good:#2e8b57;--bad:#c0392b}
+  --bg:#F6F7F8;--panel:#EFE0CD;--panel2:#F6F7F8;--line:#d6cfbd;
+  --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;
+  --good:#7fd1a0;--bad:#c0392b}
 .nav-right{display:flex;align-items:center;gap:.6rem}
 .theme-toggle{width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:1.1rem;cursor:pointer}
 .theme-toggle:hover{border-color:var(--accent)}
@@ -64,8 +68,8 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .flags{display:inline-flex;flex-wrap:wrap;gap:.3rem;align-items:center}
 .flags img{display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .meta.flagrow{display:flex;justify-content:flex-end}
-.flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color:var(--bg);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
-.flag.score{background:var(--good);font-weight:700;letter-spacing:.02em;outline:1px dotted var(--line)}
+.flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color: var(--flag);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
+.flag.score{background:var(--good);font-weight:700;letter-spacing:.02em;outline:1px dotted var(--line);outline-color: var(--flag)}
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
 
 /* loading */
