@@ -1,6 +1,7 @@
 /* Static gallery. Works on index.html and game.html. */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const loadingHTML = t => `<div class="loading" role="status" aria-live="polite"><span class="spinner"></span><span class="ltext">${t}</span></div>`;
 const list = v => (v || '').split('|').map(s => s.trim()).filter(Boolean);
 
 /* Map language name (or 2-letter code) to flagcdn country code. */
@@ -88,9 +89,15 @@ const played = () => ck.get('played', []);
 /* ---------- HOME ---------- */
 async function home() {
   const gal = $('#gallery');
+  gal.innerHTML = loadingHTML('Loading games...');
   let files;
-  try { files = await repoFiles(); } catch (e) { $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
-  const games = (await Promise.all(Object.keys(files).map(id => loadGame(id, files[id])))).filter(Boolean);
+  try { files = await repoFiles(); } catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
+  const ids = Object.keys(files), label = $('.ltext', gal); let loaded = 0;
+  const games = (await Promise.all(ids.map(async id => {
+    const g = await loadGame(id, files[id]);
+    if (label) label.textContent = `Loading games... ${++loaded}/${ids.length}`;
+    return g;
+  }))).filter(Boolean);
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
@@ -275,6 +282,7 @@ const ratingsTip = (g, D) => `<div class="rate">${[
 /* ---------- GAME PAGE ---------- */
 async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
+  el.innerHTML = loadingHTML('Loading game...');
   let g = null;
   try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
   if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }

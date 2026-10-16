@@ -68,6 +68,12 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .flag.score{background:var(--good);font-weight:700;letter-spacing:.02em;outline:1px dotted var(--line)}
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
 
+/* loading */
+.loading{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:.8rem;padding:4rem 0;color:var(--muted)}
+.spinner{width:1.6rem;height:1.6rem;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
+
 /* ratings */
 .bar{display:inline-flex;gap:3px;vertical-align:middle}
 .bar i{width:16px;height:8px;border-radius:2px;background:var(--line)}
