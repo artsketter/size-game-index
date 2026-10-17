@@ -287,6 +287,8 @@ async function gamePage() {
   try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
   if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
   document.title = `${g.title || id} – Size Game Index`;
+  const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: '/game/' + id, title: g.title || id });
+  document.readyState === 'complete' ? go() : addEventListener('load', go);
   const D = await loadRatingDescriptions();
   const imgs = thumbs(g);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
