@@ -29,6 +29,34 @@ h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
 main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
 .intro{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.5rem}
 .intro p{margin:0 0 1rem;max-width:1000ch;font-size:1.1rem}
+.intro .intro-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+.intro .intro-top p{margin:0}
+.flex-row{display: flex; padding-bottom: 10px; padding-top: 10px;}
+.questionnaire{flex: 1;}
+.questionnaire h3{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+.questionnaire h3:hover{animation-play-state:paused;}
+.glow-link:hover{text-shadow: 0 0 4px #fff}
+@keyframes bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+@media (prefers-reduced-motion:reduce){.questionnaire h3{animation:none}}
+.social{display:flex;gap:.5rem;flex-shrink:0;align-items: center;}
+.social a{display:grid;place-items: center;width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--line);color:var(--muted);padding-left: 1px}
+.social a:hover{color:var(--accent);border-color:var(--accent)}
+.discord{animation:shake 2s linear infinite}
+@keyframes shake{
+  0%{transform:rotate(-15deg)}
+  4%{transform:rotate(15deg)}
+  8%,24%{transform:rotate(-18deg)}
+  12%,28%{transform:rotate(18deg)}
+  16%{transform:rotate(-22deg)}
+  20%{transform:rotate(22deg)}
+  32%{transform:rotate(-12deg)}
+  36%{transform:rotate(12deg)}
+  40%,100%{transform:rotate(0deg)}
+}
+@media (prefers-reduced-motion:reduce){.social a:hover svg,.social a:focus-visible svg{animation:none}}
 .tabs{display:flex;flex-wrap:wrap;gap:.35rem}
 .tabs button{font:600 .9rem var(--body);color:var(--muted);background:none;border:1px solid transparent;border-radius:6px;padding:.35rem .8rem;cursor:pointer}
 .tabs button:hover{color:var(--text)}
