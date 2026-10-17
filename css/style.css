@@ -40,21 +40,56 @@ main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
   0%,100%{transform:translateY(0)}
   50%{transform:translateY(-3px)}
 }
+/* glint sweep*/
+.questionnaire a{
+  --shine:#fff;
+  color:var(--accent);
+  background:linear-gradient(110deg,var(--accent) 42%,var(--shine) 50%,var(--accent) 58%);
+  background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:glint 2.4s linear infinite;
+}
+:root[data-theme="light"] .questionnaire a{--shine:#ffd54a}
+@keyframes glint{
+  from{background-position:100% 0}
+  60%,to{background-position:0 0}
+}
+/* sparkles */
+.questionnaire h3{position:relative;display:inline-block}
+.questionnaire h3::before,
+.questionnaire h3::after{
+  content:"✦";position:absolute;color:var(--accent);font-size:.8rem;
+  opacity:0;pointer-events:none;animation:twinkle 2.4s ease-in-out infinite;
+}
+.questionnaire h3::before{top:-.55rem;left:-.9rem}
+.questionnaire h3::after{bottom:-.35rem;right:-.8rem;font-size:.65rem;animation-delay:.3s}
+@keyframes twinkle{
+  0%,50%,100%{opacity:0;transform:scale(0) rotate(0deg)}
+  60%{opacity:1;transform:scale(1.2) rotate(45deg)}
+  75%{opacity:0;transform:scale(.3) rotate(90deg)}
+}
+@media (prefers-reduced-motion:reduce){
+  .questionnaire a,
+  .questionnaire h3::before,
+  .questionnaire h3::after{animation:none}
+}
+
 @media (prefers-reduced-motion:reduce){.questionnaire h3{animation:none}}
-.social{display:flex;gap:.5rem;flex-shrink:0;align-items: center;}
+.social{display:flex;gap:.5rem;flex-shrink:0;align-items: center;color:var(--muted);font-size: 10px;}
 .social a{display:grid;place-items: center;width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--line);color:var(--muted);padding-left: 1px}
 .social a:hover{color:var(--accent);border-color:var(--accent)}
-.discord{animation:shake 2s linear infinite}
+.discord{animation:shake 3.4s linear infinite}
 @keyframes shake{
   0%{transform:rotate(-15deg)}
-  4%{transform:rotate(15deg)}
-  8%,24%{transform:rotate(-18deg)}
-  12%,28%{transform:rotate(18deg)}
-  16%{transform:rotate(-22deg)}
-  20%{transform:rotate(22deg)}
-  32%{transform:rotate(-12deg)}
-  36%{transform:rotate(12deg)}
-  40%,100%{transform:rotate(0deg)}
+  2%{transform:rotate(15deg)}
+  4%,12%{transform:rotate(-18deg)}
+  6%,14%{transform:rotate(18deg)}
+  8%{transform:rotate(-22deg)}
+  10%{transform:rotate(22deg)}
+  16%{transform:rotate(-12deg)}
+  18%{transform:rotate(12deg)}
+  20%,100%{transform:rotate(0deg)}
 }
 @media (prefers-reduced-motion:reduce){.social a:hover svg,.social a:focus-visible svg{animation:none}}
 .tabs{display:flex;flex-wrap:wrap;gap:.35rem}
