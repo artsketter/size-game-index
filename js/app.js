@@ -25,7 +25,7 @@ const ck = {
 };
 
 /* ---------- GitHub source ---------- */
-const CFG = Object.assign({ owner: '', repo: '', branch: 'main', path: 'games' }, window.GAME_REPO);
+const CFG = Object.assign({ owner: '', repo: '', branch: 'main', path: 'games' , submitForm: ''}, window.GAME_REPO);
 const base = CFG.path ? CFG.path.replace(/^\/+|\/+$/g, '') + '/' : '';
 const gameUrl = (id, f) => encodeURI(`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${base}${id}/${f}`);
 const blobUrl = (id, f) => encodeURI(`https://github.com/${CFG.owner}/${CFG.repo}/blob/${CFG.branch}/${base}${id}/${f}`);
@@ -150,6 +150,7 @@ async function home() {
   const tabs = $('#tabs'), panel = $('#filterPanel');
   const drawTabs = () => {
     tabs.innerHTML = Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
+      (CFG.submitForm ? `<span class="tabsep" aria-hidden="true"></span><a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Add a new game</a>` : '') +
       `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>`;
   };
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));

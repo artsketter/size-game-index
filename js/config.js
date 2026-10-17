@@ -3,5 +3,6 @@ window.GAME_REPO = {
   owner: 'artsketter', 
   repo: 'size-game-index-content', 
   branch: 'main',
-  path: 'games' 
+  path: 'games' ,
+  submitForm: 'https://forms.gle/DhBjq38hbEe2HN4U9'
 };
