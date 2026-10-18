@@ -150,7 +150,7 @@ async function home() {
   const tabs = $('#tabs'), panel = $('#filterPanel');
   const drawTabs = () => {
     tabs.innerHTML = Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
-      (CFG.submitForm ? `<span class="tabsep" aria-hidden="true"></span><a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Add a new game</a>` : '') +
+      (CFG.submitForm ? `<span class="tabsep" aria-hidden="true"></span><a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Submit a new game / update</a>` : '') +
       `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>`;
   };
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));
