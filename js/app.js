@@ -331,6 +331,7 @@ async function gamePage() {
         ${row('Entry created', esc(g.creation_time))}
       </dl></section>
       ${links ? `<section class="panel links">${links}</section>` : ''}
+      ${block('Installation instructions', g.instructions)}
     </aside></div>`;
   el.addEventListener('click', e => {
     const b = e.target.closest('.strip button'); if (!b) return;
