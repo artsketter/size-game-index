@@ -150,8 +150,6 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
   40%{opacity:1;transform:scale(1.2) rotate(45deg)}
   52%{opacity:0;transform:scale(.3) rotate(90deg)}
 }
-.card:nth-child(3n+2) .flag.score{--d:.8s}
-.card:nth-child(3n+3) .flag.score{--d:1.6s}
 
 /* loading */
 .loading{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:.8rem;padding:4rem 0;color:var(--muted)}
