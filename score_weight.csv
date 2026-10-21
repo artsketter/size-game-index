@@ -1,9 +1,9 @@
 field, value, weight
 time_to_complete,<5 minutes,-10
 time_to_complete,<10 minutes,-10
-time_to_complete,<20 minutes,0
-time_to_complete,<30 minutes,5
-time_to_complete,<1 hour,10
+time_to_complete,<20 minutes,-5
+time_to_complete,<30 minutes,0
+time_to_complete,<1 hour,5
 time_to_complete,<2 hours,10
 time_to_complete,2-5 hours,20
 time_to_complete,5-10 hours,20
