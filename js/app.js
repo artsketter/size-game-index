@@ -130,8 +130,8 @@ async function home() {
   const dt = v => Date.parse(v) || 0;
   const SORTS = {
     'Latest content updates': (a, b) => dt(b.last_updated) - dt(a.last_updated),
-    'Newest added': (a, b) => dt(b.creation_time) - dt(a.creation_time),
     'Newest release': (a, b) => dt(b.release_date) - dt(a.release_date),
+    'Newest added': (a, b) => dt(b.creation_time) - dt(a.creation_time),
     'Great art': (a, b) => num(b.art_rating, 5) - num(a.art_rating, 5),
     'Great mechanics': (a, b) => num(b.mechanic_rating, 5) - num(a.mechanic_rating, 5),
     'A–Z': (a, b) => (a.title || '').localeCompare(b.title || ''),
@@ -286,15 +286,14 @@ async function home() {
 }
 
 /* ---------- Score weights ---------- */
-const SCORE_WEIGHTS_URL = 'score_weight.csv';
+const SCORE_WEIGHTS = 'score_weight.csv';
 async function loadScoreWeights() {
   try {
-    const res = await fetch(SCORE_WEIGHTS_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const res = await fetch(SCORE_WEIGHTS);
     WEIGHTS = parseCSV((await res.text()).replace(/^\uFEFF/, '')).slice(1)
       .map(r => ({ field: (r[0] || '').trim().toLowerCase(), value: (r[1] || '').trim(), weight: parseFloat(r[2]) }))
       .filter(w => w.field && w.value !== '' && !isNaN(w.weight));
-  } catch (e) { console.warn('Score weights failed to load from', SCORE_WEIGHTS_URL, '- every game will score 0.', e); }
+  } catch (e) { console.warn('Score weights failed to load, every game will score 0.', e); }
 }
 
 /* ---------- Rating descriptions ---------- */
