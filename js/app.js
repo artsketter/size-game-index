@@ -1,10 +1,17 @@
 /* Static gallery. Works on index.html and game.html. */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Text with links. [label](https://…) and bare https://… addresses become links */
+const rich = t => esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<)]+)/g, (m, label, url, bare) => {
+  if (url) return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  const clean = bare.replace(/[.,;:!?]+$/, '');   /* keep trailing punctuation outside the link */
+  return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${bare.slice(clean.length)}`;
+});
+const plain = t => (t || '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
 const loadingHTML = t => `<div class="loading" role="status" aria-live="polite"><span class="spinner"></span><span class="ltext">${t}</span></div>`;
 const list = v => (v || '').split('|').map(s => s.trim()).filter(Boolean);
 
-/* Map language name (or 2-letter code) to flagcdn country code. */
+/* Map language name to flagcdn country code. */
 const FLAGS = { english:'gb', en:'gb', japanese:'jp', ja:'jp', chinese:'cn', zh:'cn', 'simplified chinese':'cn', 'traditional chinese':'tw',
   spanish:'es', es:'es', french:'fr', fr:'fr', german:'de', de:'de', italian:'it', it:'it', portuguese:'pt', pt:'pt', 'brazilian portuguese':'br',
   russian:'ru', ru:'ru', korean:'kr', ko:'kr', dutch:'nl', nl:'nl', polish:'pl', pl:'pl', turkish:'tr', tr:'tr', arabic:'sa', ar:'sa',
@@ -28,13 +35,13 @@ const score = g => {
   return g._sc = total;
 };
 
-/* cookies */
+/* Cookies */
 const ck = {
   get(n, d) { const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); try { return m ? JSON.parse(decodeURIComponent(m[1])) : d; } catch { return d; } },
   set(n, v) { document.cookie = n + '=' + encodeURIComponent(JSON.stringify(v)) + ';max-age=31536000;path=/;SameSite=Lax'; }
 };
 
-/* ---------- GitHub source ---------- */
+/* GitHub source */
 const CFG = Object.assign({ owner: '', repo: '', branch: 'main', path: 'games' , submitForm: ''}, window.GAME_REPO);
 const base = CFG.path ? CFG.path.replace(/^\/+|\/+$/g, '') + '/' : '';
 const gameUrl = (id, f) => encodeURI(`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${base}${id}/${f}`);
@@ -96,7 +103,7 @@ const ratings = g => `<div class="rate">
 const chips = a => `<div class="chips">${a.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>`;
 const played = () => ck.get('played', []);
 
-/* ---------- HOME ---------- */
+/* HOME */
 async function home() {
   const gal = $('#gallery');
   gal.innerHTML = loadingHTML('Loading games...');
@@ -216,7 +223,7 @@ async function home() {
           ...g._size_category.slice(0, 3),
           ...g._tags.slice(0, 5)
         ].filter(Boolean))}
-        <p class="sum">${esc(g.summary)}</p>
+        <p class="sum">${esc(plain(g.summary))}</p>
         ${(META[sort] || basic)(g)}
       </div>
       </a>`;
@@ -285,7 +292,7 @@ async function home() {
   }
 }
 
-/* ---------- Score weights ---------- */
+/* Score weights */
 const SCORE_WEIGHTS = 'score_weight.csv';
 async function loadScoreWeights() {
   try {
@@ -296,8 +303,7 @@ async function loadScoreWeights() {
   } catch (e) { console.warn('Score weights failed to load, every game will score 0.', e); }
 }
 
-/* ---------- Rating descriptions ---------- */
-/* descriptions/rating_desc.csv in the games repository. Columns: field, description, 0, 1, 2, 3, 4, 5 */
+/* Rating descriptions */
 async function loadRatingDescriptions() {
   const root = `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/`;
   for (const url of [root + 'descriptions/rating_desc.csv', root + base + 'descriptions/rating_desc.csv']) {
@@ -322,7 +328,7 @@ const ratingsTip = (g, D) => `<div class="rate">${[
   return `<span${tip ? ` class="tip" tabindex="0" data-tip="${esc(tip)}"` : ''}>${label} ${has ? draw(n) : '<em class="na">Not yet assessed</em>'}</span>`;
 }).join('')}</div>`;
 
-/* ---------- GAME PAGE ---------- */
+/* GAME PAGE */
 async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
   el.innerHTML = loadingHTML('Loading game...');
@@ -338,7 +344,7 @@ async function gamePage() {
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
   const many = v => list(v).map(one).join(' ');
   const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
-  const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${esc(t)}</p></section>` : '';
+  const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
     (g.walkthrough ? `<a class="btn alt" href="${esc(blobUrl(id, g.walkthrough))}" target="_blank" rel="noopener">Walkthrough</a>` : '') +
     (g.creator_link ? `<a class="btn alt" href="${esc(g.creator_link)}" target="_blank" rel="noopener">Creator</a>` : '') +
@@ -386,7 +392,7 @@ async function gamePage() {
 
 $('#game') ? gamePage() : home();
 
-/* "Back to gallery" acts like the browser's Back button when the visitor came from the gallery */
+/* "Back to gallery" acts like the browser's back button when the visitor came from the gallery */
 document.addEventListener('click', e => {
   if (!e.target.closest('a.back')) return;
   try {
