@@ -2,12 +2,12 @@
 :root{
   --bg:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;
   --text:#e8efe9;--muted:#9db5b9;--accent:#f2b84b;
-  --good:#7fd1a0;--bad:#ef7d6a;--r:10px;--flag:#191919;
+  --good:#7fd1a0;--bad:#ef7d6a;--r:10px;
   --head:'Bricolage Grotesque','Trebuchet MS',sans-serif;--body:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;--nav:64px}
 *{box-sizing:border-box}
 :root{color-scheme:dark;--ink:#10222b}
 :root[data-theme="light"]{color-scheme:light;
-  --bg:#F6F7F8;--panel:#EFE0CD;--panel2:#F6F7F8;--line:#d6cfbd;
+  --bg:#F6F7F8;--panel:#e9edc9;--panel2:#F6F7F8;--line:#d6cfbd;
   --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;
   --good:#7fd1a0;--bad:#c0392b}
 .nav-right{display:flex;align-items:center;gap:.6rem}
@@ -40,41 +40,8 @@ main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
   0%,100%{transform:translateY(0)}
   50%{transform:translateY(-3px)}
 }
-/* glint sweep*/
-.questionnaire a{
-  --shine:#fff;
-  color:var(--accent);
-  background:linear-gradient(110deg,var(--accent) 42%,var(--shine) 50%,var(--accent) 58%);
-  background-size:250% 100%;
-  -webkit-background-clip:text;background-clip:text;
-  -webkit-text-fill-color:transparent;
-  animation:glint 2.4s linear infinite;
-}
-:root[data-theme="light"] .questionnaire a{--shine:#ffd54a}
-@keyframes glint{
-  from{background-position:100% 0}
-  60%,to{background-position:0 0}
-}
-/* sparkles */
-.questionnaire h3{position:relative;display:inline-block}
-.questionnaire h3::before,
-.questionnaire h3::after{
-  content:"✦";position:absolute;color:var(--accent);font-size:.8rem;
-  opacity:0;pointer-events:none;animation:twinkle 2.4s ease-in-out infinite;
-}
-.questionnaire h3::before{top:-.55rem;left:-.9rem}
-.questionnaire h3::after{bottom:-.35rem;right:-.8rem;font-size:.65rem;animation-delay:.3s}
-@keyframes twinkle{
-  0%,50%,100%{opacity:0;transform:scale(0) rotate(0deg)}
-  60%{opacity:1;transform:scale(1.2) rotate(45deg)}
-  75%{opacity:0;transform:scale(.3) rotate(90deg)}
-}
-@media (prefers-reduced-motion:reduce){
-  .questionnaire a,
-  .questionnaire h3::before,
-  .questionnaire h3::after{animation:none}
-}
-@media (prefers-reduced-motion:reduce){.questionnaire h3{animation:none}}
+
+/* discord */
 .social{display:flex;gap:.5rem;flex-shrink:0;align-items: center;color:var(--muted);font-size: 10px;}
 .social a{display:grid;place-items: center;width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--line);color:var(--muted);padding-left: 1px}
 .social a:hover{color:var(--accent);border-color:var(--accent)}
@@ -91,6 +58,7 @@ main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
   20%,100%{transform:rotate(0deg)}
 }
 @media (prefers-reduced-motion:reduce){.social a:hover svg,.social a:focus-visible svg{animation:none}}
+
 .tabs{display:flex;flex-wrap:wrap;gap:.35rem}
 .tabs button{font:600 .9rem var(--body);color:var(--muted);background:none;border:1px solid transparent;border-radius:6px;padding:.35rem .8rem;cursor:pointer}
 .tabs button:hover{color:var(--text)}
@@ -133,8 +101,47 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .flags{display:inline-flex;flex-wrap:wrap;gap:.3rem;align-items:center}
 .flags img{display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .meta.flagrow{display:flex;justify-content:flex-end}
-.flag{position:absolute;top:.5rem;left:.5rem;background:var(--accent);color: var(--flag);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
-.flag.score{background:var(--good);font-weight:700;letter-spacing:.02em;outline:1px dotted var(--line);outline-color: var(--flag)}
+
+.flag{position:absolute;top:.5rem;left:.5rem;color: var(--accent);font:600 1.1rem var(--body);padding:.1rem .55rem;border-radius:999px}
+.flag.score{font-weight:700;letter-spacing:.02em;outline:1px solid;outline-color: var(--line)}
+
+/* badge anims */
+.flag.score{
+  --d:0s;
+  background:
+    linear-gradient(110deg,transparent 40%,rgba(194, 155, 12,.75) 50%,transparent 60%) 100% 0 / 250% 100% no-repeat,
+    var(--panel);
+  animation:flag-glint 3s ease-in-out var(--d) infinite;
+}
+@keyframes flag-glint{
+  0%{background-position:100% 0,0 0}
+  35%,100%{background-position:0 0,0 0}
+}
+.flag.score::before,
+.flag.score::after{
+  content:"✦";position:absolute;color:var(--accent);font-size:.7rem;line-height:1;
+  text-shadow:0 0 4px rgba(0,0,0,.55);opacity:0;pointer-events:none;
+}
+.flag.score::before{top:-.4rem;left:-.3rem;animation:flag-twinkle 3s ease-in-out var(--d) infinite}
+.flag.score::after{bottom:-.35rem;right:-.3rem;font-size:.55rem;animation:flag-twinkle 3s ease-in-out calc(var(--d) + .3s) infinite}
+@keyframes flag-twinkle{
+  0%,30%,100%{opacity:0;transform:scale(0) rotate(0deg)}
+  40%{opacity:1;transform:scale(1.2) rotate(45deg)}
+  52%{opacity:0;transform:scale(.3) rotate(90deg)}
+}
+.card:nth-child(3n+2) .flag.score{--d:.8s}
+.card:nth-child(3n+3) .flag.score{--d:1.6s}
+@media (prefers-reduced-motion:reduce){.flag.score,.flag.score::before,.flag.score::after{animation:none}}
+.flag.score::before,
+.flag.score::after{
+  --o:var(--line);
+  text-shadow:
+    -.7px -.7px 0 var(--o),  0 -.7px 0 var(--o),  .7px -.7px 0 var(--o),
+    -.7px  0    0 var(--o),                       .7px  0    0 var(--o),
+    -.7px  .7px 0 var(--o),  0  .7px 0 var(--o),  .7px  .7px 0 var(--o);
+}
+
+
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
 
 /* loading */

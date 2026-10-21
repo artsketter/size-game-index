@@ -16,7 +16,17 @@ const flags = v => `<span class="flags">${list(v).map(l => {
 }).join('')}</span>`;
 const yes = v => /^(1|true|yes|x)$/i.test((v || '').trim());
 const num = (v, max) => Math.max(0, Math.min(max, parseInt(v, 10) || 0));
-const score = g => Math.round(((num(g.art_rating, 5) + num(g.mechanic_rating, 5))*2 + num(g.animation_rating, 5)) * num(g.size_focus, 3) / 75 * 100);
+let WEIGHTS = [];
+const sameVal = (a, b) => a.toLowerCase() === b.toLowerCase() || (a !== '' && b !== '' && isFinite(a) && isFinite(b) && +a === +b);
+const score = g => {
+  if (g._sc !== undefined) return g._sc;
+  let total = 0;
+  for (const w of WEIGHTS) {
+    const vals = w.field === 'contains_ai' ? [yes(g.contains_ai) ? 'yes' : 'no'] : list(g[w.field]);
+    if (vals.some(v => sameVal(v, w.value))) total += w.weight;
+  }
+  return g._sc = total;
+};
 
 /* cookies */
 const ck = {
@@ -93,11 +103,13 @@ async function home() {
   let files;
   try { files = await repoFiles(); } catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
   const ids = Object.keys(files), label = $('.ltext', gal); let loaded = 0;
+  const weightsReady = loadScoreWeights();
   const games = (await Promise.all(ids.map(async id => {
     const g = await loadGame(id, files[id]);
     if (label) label.textContent = `Loading games... ${++loaded}/${ids.length}`;
     return g;
   }))).filter(Boolean);
+  await weightsReady;
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
@@ -195,7 +207,7 @@ async function home() {
   let shownList = [], shownCount = 0, done = new Set();
   const card = g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
-        ${score(g) > 60 ? `<span class="flag score">★ Recommended</span>` : ''}
+        ${score(g) > 70 ? `<span class="flag score">★ Index Gem</span> ` : ''}
         ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}
       </div>
       <div class="body">
@@ -235,6 +247,25 @@ async function home() {
       }) &&
       terms.every(t => g._hay.includes(t))
     ).sort(SORTS[sort]);
+    /* While searching, title matches come first */
+    if (terms.length) {
+      const q = terms.join(' ');
+      const rank = g => {
+        const t = (g.title || '').toLowerCase(), o = (g.original_title || '').toLowerCase();
+        /* exact title */
+        if (t === q || o === q) return 0;
+        
+        /* title starts with the search */
+        if (t.startsWith(q) || o.startsWith(q)) return 1;
+        
+        /* title contains every word */
+        if (terms.every(w => t.includes(w)) || terms.every(w => o.includes(w))) return 2;
+        
+        /* matched elsewhere (tags, summary, authors…) */
+        return 3;          
+      };
+      shown.sort((a, b) => rank(a) - rank(b));
+    }
     shownList = shown;
     shownCount = 0;
     gal.innerHTML = '';
@@ -252,6 +283,18 @@ async function home() {
     while (shownCount < Math.min(st.n, shownList.length)) addChunk();
     window.scrollTo(0, st.y);
   }
+}
+
+/* ---------- Score weights ---------- */
+const SCORE_WEIGHTS_URL = 'score_weight.csv';
+async function loadScoreWeights() {
+  try {
+    const res = await fetch(SCORE_WEIGHTS_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    WEIGHTS = parseCSV((await res.text()).replace(/^\uFEFF/, '')).slice(1)
+      .map(r => ({ field: (r[0] || '').trim().toLowerCase(), value: (r[1] || '').trim(), weight: parseFloat(r[2]) }))
+      .filter(w => w.field && w.value !== '' && !isNaN(w.weight));
+  } catch (e) { console.warn('Score weights failed to load from', SCORE_WEIGHTS_URL, '- every game will score 0.', e); }
 }
 
 /* ---------- Rating descriptions ---------- */

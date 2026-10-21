@@ -1,0 +1,37 @@
+field, value, weight
+time_to_complete,<5 minutes,-10
+time_to_complete,<10 minutes,-10
+time_to_complete,<20 minutes,0
+time_to_complete,<30 minutes,5
+time_to_complete,<1 hour,10
+time_to_complete,<2 hours,10
+time_to_complete,2-5 hours,20
+time_to_complete,5-10 hours,20
+time_to_complete,10+ hours,20
+time_to_complete,20+ hours,20
+time_to_complete,∞ endless,5
+tags,Grindy,-10
+tags,Asset Flip,-100
+development_status,Unreleased,-100
+development_status,Demo,-5
+development_status,Completed,+5
+art_rating,1,-10
+art_rating,2,-5
+art_rating,3,5
+art_rating,4,10
+art_rating,5,20
+mechanic_rating,0,-10
+mechanic_rating,1,-10
+mechanic_rating,2,5
+mechanic_rating,3,10
+mechanic_rating,4,20
+mechanic_rating,5,30
+animation_rating,1,-10
+animation_rating,2,-5
+animation_rating,3,5
+animation_rating,4,10
+animation_rating,5,20
+size_focus,1,-20
+size_focus,2,10
+size_focus,3,40
+contains_ai,yes,-20
