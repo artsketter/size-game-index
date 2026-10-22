@@ -21,7 +21,7 @@ art_rating,3,5
 art_rating,4,10
 art_rating,5,20
 mechanic_rating,0,-10
-mechanic_rating,1,-10
+mechanic_rating,1,-5
 mechanic_rating,2,5
 mechanic_rating,3,10
 mechanic_rating,4,20
