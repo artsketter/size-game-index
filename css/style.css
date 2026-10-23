@@ -101,7 +101,7 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .card:hover{border-color:var(--accent)}
 .thumb{position:relative;overflow:hidden;aspect-ratio:16/10;background:var(--panel2) center/cover no-repeat}
 .thumb.none::after{content:"No image";position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
-.played{position:absolute;top:.5rem;right:.5rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--good);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:.95rem;outline:1px dotted var(--line)}
+.played{position:absolute;top:-1px;left:0;width:56px;height:56px;padding:10px 0 0 10px;background:var(--panel);color:var(--accent);clip-path:polygon(0 0,100% 0,0 100%);font:600 1rem/1 var(--body);font-size: 20px;border: }
 .card .body{flex:1;padding:.8rem 1rem 1rem;display:flex;flex-direction:column;gap:.5rem}
 .card .body > :last-child{margin-top:auto}
 .card h3{font-size:1.15rem}
