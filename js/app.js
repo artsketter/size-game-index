@@ -37,8 +37,20 @@ const score = g => {
 
 /* Cookies */
 const ck = {
-  get(n, d) { const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); try { return m ? JSON.parse(decodeURIComponent(m[1])) : d; } catch { return d; } },
-  set(n, v) { document.cookie = n + '=' + encodeURIComponent(JSON.stringify(v)) + ';max-age=31536000;path=/;SameSite=Lax'; }
+  get(n, d) {
+    try { const v = localStorage.getItem('gs:' + n); if (v !== null) return JSON.parse(v); } catch {}
+    const m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)'));
+    if (m) {
+      try {
+        const val = JSON.parse(decodeURIComponent(m[1]));
+        ck.set(n, val);
+        document.cookie = n + '=;max-age=0;path=/';
+        return val;
+      } catch {}
+    }
+    return d;
+  },
+  set(n, v) { try { localStorage.setItem('gs:' + n, JSON.stringify(v)); } catch {} }
 };
 
 /* GitHub source */
@@ -136,6 +148,14 @@ const ratings = g => `<div class="rate">
   <span>Animation ${bar(num(g.animation_rating, 5))}</span><span>Size focus ${ring(num(g.size_focus, 3))}</span></div>`;
 const chips = a => `<div class="chips">${a.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>`;
 const played = () => ck.get('played', []);
+const when = v => Date.parse(v) || 0;
+const isUpdated = (g, seen) => !!seen && seen[g.id] !== undefined && when(g.last_updated) > when(seen[g.id]);
+const resetUpdatedPlayed = (games, seen) => {
+  if (!seen) return;
+  const stale = new Set(games.filter(g => isUpdated(g, seen)).map(g => g.id));
+  const before = played(), kept = before.filter(id => !stale.has(id));
+  if (kept.length !== before.length) ck.set('played', kept);
+};
 
 /* HOME */
 async function home() {
@@ -147,6 +167,28 @@ async function home() {
   try { games = await loadAllGames((n, total) => { if (label) label.textContent = `Loading games... ${n}/${total}`; }); }
   catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
   await weightsReady;
+  let savedBadges = null;
+  if ((performance.getEntriesByType('navigation')[0] || {}).type === 'back_forward') { try { savedBadges = JSON.parse(sessionStorage.getItem('gs-badges')); } catch {} }
+  const badges = Object.assign({}, savedBadges);
+  const pending = new Set(ck.get('pending', []));   /* played games that were updated: their badge stays until the game's page is visited */
+  if (!savedBadges) {
+    const seen = ck.get('seen', null);   /* first visit ever: no badges */
+    if (seen) {
+      const wasPlayed = new Set(played());
+      games.forEach(g => {
+        if (seen[g.id] === undefined) badges[g.id] = 'game';
+        else if (isUpdated(g, seen)) { if (wasPlayed.has(g.id)) pending.add(g.id); else badges[g.id] = 'update'; }
+      });
+      resetUpdatedPlayed(games, seen);
+      ck.set('pending', [...pending]);
+    }
+    const next = Object.assign({}, seen);
+    games.forEach(g => next[g.id] = g.last_updated || '');
+    ck.set('seen', next);
+    ck.set('lastVisit', Date.now());
+    try { sessionStorage.setItem('gs-badges', JSON.stringify(badges)); } catch {}
+  }
+  games.forEach(g => { if (pending.has(g.id)) badges[g.id] = 'update'; });
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
@@ -246,6 +288,7 @@ async function home() {
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
         ${score(g) > 70 ? `<span class="flag score">★ Index Gem</span> ` : ''}
         ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}
+        ${badges[g.id] ? `<span class="new-badge ${badges[g.id]}">${badges[g.id] === 'game' ? 'New Game!' : 'New Update!'}</span>` : ''}
       </div>
       <div class="body">
         <h3>${esc(g.title || g.id)}</h3>
@@ -415,6 +458,9 @@ async function gamePage() {
     $('#stage').style.backgroundImage = `url('${b.dataset.u}')`;
     el.querySelectorAll('.strip button').forEach(x => x.classList.toggle('on', x === b));
   });
+  resetUpdatedPlayed([g], ck.get('seen', null));
+  const pend = ck.get('pending', []);   /* visiting the page clears its persistent update badge */
+  if (pend.includes(id)) ck.set('pending', pend.filter(x => x !== id));
   const box = $('#playedBox'); box.checked = played().includes(id);
   box.onchange = () => { const s = new Set(played()); box.checked ? s.add(id) : s.delete(id); ck.set('played', [...s]); };
 }
