@@ -77,6 +77,40 @@ function parseCSV(t) {
   if (f || r.length) { r.push(f); rows.push(r); }
   return rows;
 }
+
+const withFiles = g => { const f = g.files || []; delete g.files; Object.defineProperty(g, '_files', { value: f }); return g; };
+async function loadIndex() {
+  const key = 'gs-index:' + CFG.owner + '/' + CFG.repo + '@' + CFG.branch;
+  try { const o = JSON.parse(sessionStorage.getItem(key)); if (o && Date.now() - o.t < 6e5) return o.d.map(withFiles); } catch {}
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${base}index.json`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (!Array.isArray(d)) return null;
+    try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d })); } catch {}
+    return d.map(withFiles);
+  } catch { return null; }
+}
+
+async function loadAllGames(onProgress) {
+  const idx = await loadIndex();
+  if (idx) return idx;
+  const files = await repoFiles(), ids = Object.keys(files); let n = 0;
+  return (await Promise.all(ids.map(async id => {
+    const g = await loadGame(id, files[id]);
+    if (onProgress) onProgress(++n, ids.length);
+    return g;
+  }))).filter(Boolean);
+}
+/* One game: from the index; if it is not there yet (index still rebuilding), read its own CSV */
+async function loadOneGame(id) {
+  const idx = await loadIndex();
+  const hit = idx && idx.find(g => g.id === id);
+  if (hit) return hit;
+  const files = await repoFiles();
+  return loadGame(id, files[id]);
+}
+
 async function loadGame(id, files) {
   if (!files || !files.includes('game.csv')) return null;
   try {
@@ -107,15 +141,11 @@ const played = () => ck.get('played', []);
 async function home() {
   const gal = $('#gallery');
   gal.innerHTML = loadingHTML('Loading games...');
-  let files;
-  try { files = await repoFiles(); } catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
-  const ids = Object.keys(files), label = $('.ltext', gal); let loaded = 0;
+  const label = $('.ltext', gal);
   const weightsReady = loadScoreWeights();
-  const games = (await Promise.all(ids.map(async id => {
-    const g = await loadGame(id, files[id]);
-    if (label) label.textContent = `Loading games... ${++loaded}/${ids.length}`;
-    return g;
-  }))).filter(Boolean);
+  let games;
+  try { games = await loadAllGames((n, total) => { if (label) label.textContent = `Loading games... ${n}/${total}`; }); }
+  catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
   await weightsReady;
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
@@ -333,8 +363,7 @@ async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
   el.innerHTML = loadingHTML('Loading game...');
   let g = null;
-  try { const files = await repoFiles(); g = id && await loadGame(id, files[id]); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }
-  if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
+  try { g = id && await loadOneGame(id); } catch (e) { el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a><p class="empty">${esc(e.message)}</p>`; return; }  if (!g) { el.innerHTML = '<a class="back" href="index.html">← Back to gallery</a><p class="empty">That game could not be found.</p>'; return; }
   document.title = `${g.title || id} – Size Game Index`;
   const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: '/game/' + id, title: g.title || id });
   document.readyState === 'complete' ? go() : addEventListener('load', go);
