@@ -197,6 +197,7 @@ dd{margin:0}
 .btn.alt{background:none;color:var(--accent);border:1px solid var(--accent)}
 .check{display:flex;align-items:center;gap:.6rem;font-weight:600;cursor:pointer}
 .check input{width:1.2rem;height:1.2rem;accent-color:var(--good)}
+.check-note{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem;line-height:1.4}
 .back{display:inline-block;margin-bottom:1rem}
 
 /* anims */

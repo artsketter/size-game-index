@@ -430,7 +430,7 @@ async function gamePage() {
       ${block('Narrative', g.narrative)}
       ${block('Mechanics', g.mechanics_description)}
     </div><aside>
-      <section class="panel"><label class="check"><input type="checkbox" id="playedBox"> I've played this</label></section>
+      <section class="panel"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
       <section class="panel">${ratingsTip(g, D)}</section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
