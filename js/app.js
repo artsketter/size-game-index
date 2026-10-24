@@ -148,6 +148,7 @@ const ratings = g => `<div class="rate">
   <span>Animation ${bar(num(g.animation_rating, 5))}</span><span>Size focus ${ring(num(g.size_focus, 3))}</span></div>`;
 const chips = a => `<div class="chips">${a.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>`;
 const played = () => ck.get('played', []);
+const favorites = () => ck.get('favorites', []);
 const when = v => Date.parse(v) || 0;
 const isUpdated = (g, seen) => !!seen && seen[g.id] !== undefined && when(g.last_updated) > when(seen[g.id]);
 const resetUpdatedPlayed = (games, seen) => {
@@ -232,7 +233,7 @@ async function home() {
   let sort = ck.get('sort', null);
   if (!SORTS[sort]) sort = Object.keys(SORTS)[0];
   const saved = ck.get('filters', {});
-  const flt = Object.assign({ showFiltered: false, hideAI: false, hidePlayed: false }, saved);
+  const flt = Object.assign({ showFiltered: false, hideAI: false, hidePlayed: false, onlyFavorites: false }, saved);
   SECTIONS.forEach(x => flt[x.key] = Object.assign({ inc: [], exc: [] }, flt[x.key]));
   if (saved.inc) { flt.tags.inc = saved.inc; flt.tags.exc = saved.exc || []; delete flt.inc; delete flt.exc; }  /* old cookie format */
   const activeCount = () => SECTIONS.reduce((n, x) => n + flt[x.key].inc.length + flt[x.key].exc.length, 0) + flt.hideAI + flt.hidePlayed;
@@ -240,10 +241,18 @@ async function home() {
 
   const tabs = $('#tabs'), panel = $('#filterPanel');
   const drawTabs = () => {
-    tabs.innerHTML = Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
-      (CFG.submitForm ? `<span class="tabsep" aria-hidden="true"></span><a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Submit a new game / update</a>` : '') +
-      `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>`;
-  };
+  tabs.innerHTML =
+    `<div class="tabs-row">` +
+      Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
+    `</div>` +
+    `<div class="tabs-row">` +
+      `<button class="favtab ${flt.onlyFavorites ? 'on' : ''}" data-fav="1" aria-pressed="${flt.onlyFavorites}">Favorites Only</button>` +
+      `<span class="tabs-right">` +
+        (CFG.submitForm ? `<a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Submit a new game / update</a>` : '') +
+        `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>` +
+      `</span>` +
+    `</div>`;
+};
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
@@ -262,6 +271,8 @@ async function home() {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.f) 
       { panel.hidden = !panel.hidden; } 
+    else if (b.dataset.fav)
+      { flt.onlyFavorites = !flt.onlyFavorites; ck.set('filters', flt); }
     else 
       { sort = b.dataset.s; ck.set('sort', sort); }
     drawTabs(); render();
@@ -283,7 +294,7 @@ async function home() {
   const CHUNK = 'IntersectionObserver' in window ? 64 : Infinity;   /* very old browsers get everything at once */
   const sentinel = gal.insertAdjacentElement('afterend', Object.assign(document.createElement('div'), { id: 'sentinel', style: 'height:1px' }));
   const oldBtn = $('#more'); if (oldBtn) oldBtn.remove();
-  let shownList = [], shownCount = 0, done = new Set();
+  let shownList = [], shownCount = 0, done = new Set(), favs = new Set();
   const card = g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
         ${score(g) > 70 ? `<span class="flag score">★ Index Gem</span> ` : ''}
@@ -291,7 +302,7 @@ async function home() {
         ${badges[g.id] ? `<span class="new-badge ${badges[g.id]}">${badges[g.id] === 'game' ? 'New Game!' : 'New Update!'}</span>` : ''}
       </div>
       <div class="body">
-        <h3>${esc(g.title || g.id)}</h3>
+        <div class="title-row"><h3>${esc(g.title || g.id)}</h3>${favs.has(g.id) ? '<span class="fav-heart" title="Favorite" aria-label="Favorite">♥</span>' : ''}</div>
         ${chips([
           ...g._size_category.slice(0, 3),
           ...g._tags.slice(0, 5)
@@ -318,8 +329,10 @@ async function home() {
   function render() {
     const terms = $('#search').value.toLowerCase().split(/\s+/).filter(Boolean);
     done = new Set(played());
+    favs = new Set(favorites());
     const shown = games.filter(g =>
       (flt.showFiltered || !yes(g.filtered)) &&
+      (!flt.onlyFavorites || favs.has(g.id)) &&
       !(flt.hideAI && yes(g.contains_ai)) && !(flt.hidePlayed && done.has(g.id)) &&
       SECTIONS.every(x => {
         const f = flt[x.key], v = g._v[x.key];
@@ -350,6 +363,7 @@ async function home() {
     shownCount = 0;
     gal.innerHTML = '';
     addChunk();
+    $('#empty').textContent = (flt.onlyFavorites) && !favs.size ? 'No favorites yet. Tick “Favorite” on a game’s page to add it here.' : 'No games match. Clear the search or adjust your filters.';
     $('#empty').hidden = shown.length > 0;
   }
   let st = null;
@@ -430,7 +444,7 @@ async function gamePage() {
       ${block('Narrative', g.narrative)}
       ${block('Mechanics', g.mechanics_description)}
     </div><aside>
-      <section class="panel"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
+      <section class="panel checks"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><label class="check"><input type="checkbox" id="favBox"> Favorite</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
       <section class="panel">${ratingsTip(g, D)}</section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
@@ -463,6 +477,8 @@ async function gamePage() {
   if (pend.includes(id)) ck.set('pending', pend.filter(x => x !== id));
   const box = $('#playedBox'); box.checked = played().includes(id);
   box.onchange = () => { const s = new Set(played()); box.checked ? s.add(id) : s.delete(id); ck.set('played', [...s]); };
+  const fav = $('#favBox'); fav.checked = favorites().includes(id);
+  fav.onchange = () => { const s = new Set(favorites()); fav.checked ? s.add(id) : s.delete(id); ck.set('favorites', [...s]); };
 }
 
 $('#game') ? gamePage() : home();
