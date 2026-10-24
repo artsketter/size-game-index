@@ -415,6 +415,14 @@ const ratingsTip = (g, D) => `<div class="rate">${[
   return `<span${tip ? ` class="tip" tabindex="0" data-tip="${esc(tip)}"` : ''}>${label} ${has ? draw(n) : '<em class="na">Not yet assessed</em>'}</span>`;
 }).join('')}</div>`;
 
+const SCORE_INFO = [
+  [,'Games are categorized by specific criteria listed below.'],
+  ['Art', '0: Game has no visual content.\n1: Game uses mostly generic asset store, free or default engine assets.\n2: Game uses mostly poor quality or AI generated assets.\n3: Game has many assets of differing styles, assets and visuals may vary in quality.\n4: Game has mostly good quality assets with a uniform style. Games which use modular character software are typically capped here, as they are good quality, but not distinctive by default.\n5: Game art is of a high standard and consistent throughout.'],
+  ['Mechanics', '0: Game has no player-agency or controllable elements.\n1: Game only includes features which are shipped as engine defaults.\n2: Game features custom player mechanics typically found in similar games.\n3: Game features unique custom mechanics which are not typically found in games of its archetype.\n4: Game features an attempt at custom mechanics that relate to size-difference (changing scale dynamics/power disparity).\n5: Game features well-executed mechanic(s) which relate to size-difference. [Subjective]'],
+  ['Animation', 'N/a: Game does not feature any animated visuals.\n1: Game uses mostly generic asset store, free or default animations.\n2: Game has some custom animations, but of generally poor quality.\n3: Game uses simple, consistent baked or procedural animations.\n4: Game features good quality baked or procedural animations.\n5: Game animation is of a high standard and consistent throughout.'],
+  ['Size focus', '1: The game features mostly standard content with one or two scenarios dealing explicitly with size-difference content.\nOR\nThe game features a cast of characters that are unusually taller than the player character or vice-versa, but size-difference content is not an explicit focus.\n2: The game contains several scenes and sequences that are explicitly related to size-difference content, but the game does not center exclusively or majorly on size-difference.\nOR\nThe game centers exclusively on size-difference, but does not contain fetishized content.\n3: The game centers entirely on size-fetish content']
+];
+
 /* GAME PAGE */
 async function gamePage() {
   const el = $('#game'), id = new URLSearchParams(location.search).get('g');
@@ -445,7 +453,7 @@ async function gamePage() {
       ${block('Mechanics', g.mechanics_description)}
     </div><aside>
       <section class="panel checks"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><label class="check"><input type="checkbox" id="favBox"> Favorite</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
-      <section class="panel">${ratingsTip(g, D)}</section>
+      <section class="panel scores">${ratingsTip(g, D)}<button type="button" class="info-btn" id="scoreInfoBtn" aria-expanded="false" aria-controls="scoreInfo" title="How are games scored?">?</button></section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
         ${row('Size Category', many(g.size_category))}
@@ -467,6 +475,16 @@ async function gamePage() {
       ${links ? `<section class="panel links">${links}</section>` : ''}
       ${block('Installation instructions', g.instructions)}
     </aside></div>`;
+  el.insertAdjacentHTML('beforeend', `<aside id="scoreInfo" class="score-info" hidden aria-label="How are games scored?">
+    <button type="button" class="close" aria-label="Close">×</button>
+    <h2>How are games scored?</h2>
+    ${SCORE_INFO.map(([h, t]) => `<h3>${esc(h)}</h3><p>${rich(t)}</p>`).join('')}
+  </aside>`);
+  const info = $('#scoreInfo'), infoBtn = $('#scoreInfoBtn');
+  const setInfo = open => { info.hidden = !open; infoBtn.setAttribute('aria-expanded', open); };
+  infoBtn.onclick = () => setInfo(info.hidden);
+  info.querySelector('.close').onclick = () => setInfo(false);
+  addEventListener('keydown', e => { if (e.key === 'Escape') setInfo(false); });
   el.addEventListener('click', e => {
     const b = e.target.closest('.strip button'); if (!b) return;
     $('#stage').style.backgroundImage = `url('${b.dataset.u}')`;

@@ -214,6 +214,18 @@ dd{margin:0}
 .check-note{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem;line-height:1.4}
 .back{display:inline-block;margin-bottom:1rem}
 
+/* score info */
+.panel.scores{position:relative;padding-bottom:2.4rem}
+.info-btn{position:absolute;right:.6rem;bottom:.6rem;width:1.5rem;height:1.5rem;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--muted);font:700 .8rem/1 var(--head);cursor:pointer}
+.info-btn:hover,.info-btn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent)}
+.score-info{position:fixed;top:var(--nav);right:0;bottom:0;width:min(340px,90vw);overflow-y:auto;z-index:40;background:var(--panel);border-left:1px solid var(--line);padding:1.25rem 1.25rem 2rem;box-shadow:-6px 0 18px rgba(0,0,0,.35)}
+.score-info[hidden]{display:none}
+.score-info h2{font-size:1.2rem;margin-bottom:1rem;padding-right:2rem}
+.score-info h3{font-size:1rem;color:var(--accent);margin:1rem 0 .3rem}
+.score-info p{margin:0;white-space:pre-line;font-size:.95rem}
+.score-info .close{position:absolute;top:.6rem;right:.7rem;background:none;border:0;color:var(--muted);font-size:1.5rem;line-height:1;cursor:pointer}
+.score-info .close:hover{color:var(--accent)}
+
 /* anims */
 @media(prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
 @media(prefers-reduced-motion:reduce){
