@@ -25,6 +25,7 @@ h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
 /* navbar */
 .navbar{position:sticky;top:0;z-index:50;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(.75rem,3vw,2rem);background:var(--panel);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--text);font:700 1.3rem var(--head)}
+.shrink span{font-size:calc(1em - var(--i) * .14em)}
 .navbar input,.navsearch input{width:min(320px,48vw);padding:.5rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
 .nav-right{display:flex;align-items:center;gap:.6rem}
 .theme-toggle{width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:1.1rem;cursor:pointer}
@@ -36,7 +37,7 @@ main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
 .intro p{margin:0 0 1rem;max-width:1000ch;font-size:1.1rem}
 .intro .intro-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
 .intro .intro-top p{margin:0}
-.flex-row{display:flex;padding:10px 0}
+.flex-row{display:flex;align-items:center;gap:1.5rem;padding:10px 0}
 .questionnaire{flex:1}
 .questionnaire h3:hover{animation-play-state:paused}
 .questionnaire h3 a{
@@ -161,9 +162,16 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* game scores */
-.bar{display:inline-flex;gap:3px;vertical-align:middle}
-.bar i{width:16px;height:8px;border-radius:2px;background:var(--line)}
-.bar i.f{background:var(--accent)}
+.chain{position:relative;display:inline-flex;height:24px;vertical-align:middle}
+.chain::before{content:"";position:absolute;left:12px;right:12px;top:50%;height:2px;margin-top:-1px;background:var(--line)}
+.chain i{position:relative;width:24px;height:24px;display:grid;place-items:center}
+.chain i::after{content:"";width:var(--d);height:var(--d);border-radius:50%;background:var(--panel);border:2px solid var(--line)}
+.chain i:nth-child(1){--d:6px}
+.chain i:nth-child(2){--d:7.5px}
+.chain i:nth-child(3){--d:9px}
+.chain i:nth-child(4){--d:10.5px}
+.chain i:nth-child(5){--d:12px}
+.chain i.on::after{width:calc(var(--d)*1.2);height:calc(var(--d)*1.2);background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px var(--panel),0 0 0 4px var(--accent)}
 .ring{vertical-align:middle}
 .ring circle{fill:none;stroke:var(--line);stroke-width:5}
 .ring circle.f{stroke:var(--accent)}

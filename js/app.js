@@ -137,7 +137,7 @@ function thumbs(g, onlyFirst) {
   const names = g.thumbnails ? list(g.thumbnails) : g._files.filter(n => /^thumb[1-5]\.(jpe?g|png|webp|gif|svg)$/i.test(n)).sort();
   return names.slice(0, onlyFirst ? 1 : 5).map(n => gameUrl(g.id, n));
 }
-const bar = n => `<span class="bar" role="img" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'f' : ''}"></i>`).join('')}</span>`;
+const bar = n => `<span class="chain" role="img" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i === n ? 'on' : ''}"></i>`).join('')}</span>`;
 const ring = n => {
   const C = 2 * Math.PI * 14, seg = C / 3;
   return `<svg class="ring" width="34" height="34" viewBox="0 0 34 34" role="img" aria-label="${n} of 3">${[0,1,2].map(i =>
