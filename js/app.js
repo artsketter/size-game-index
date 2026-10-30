@@ -441,7 +441,7 @@ async function gamePage() {
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
     (g.walkthrough ? `<a class="btn alt" href="${esc(blobUrl(id, g.walkthrough))}" target="_blank" rel="noopener">Walkthrough</a>` : '') +
-    (g.creator_link ? `<a class="btn alt" href="${esc(g.creator_link)}" target="_blank" rel="noopener">Creator</a>` : '') +
+    [...new Set([...list(g.creator_links), ...list(g.creator_link)])].map(u => `<a class="btn alt" href="${esc(u)}" target="_blank" rel="noopener">Creator on ${esc(host(u))}</a>`).join('') +
     (g.forum_link ? `<a class="btn alt" href="${esc(g.forum_link)}" target="_blank" rel="noopener">Forum thread</a>` : '');
   el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a>
     <div class="top"><h1>${esc(g.title || id)}</h1>${g.original_title ? `<span class="orig">${esc(g.original_title)}</span>` : ''}</div>
