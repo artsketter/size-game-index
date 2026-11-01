@@ -149,6 +149,7 @@ const ratings = g => `<div class="rate">
 const chips = a => `<div class="chips">${a.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>`;
 const played = () => ck.get('played', []);
 const favorites = () => ck.get('favorites', []);
+const hiddenGames = () => ck.get('hidden', []);
 const when = v => Date.parse(v) || 0;
 const isUpdated = (g, seen) => !!seen && seen[g.id] !== undefined && when(g.last_updated) > when(seen[g.id]);
 const resetUpdatedPlayed = (games, seen) => {
@@ -233,7 +234,7 @@ async function home() {
   let sort = ck.get('sort', null);
   if (!SORTS[sort]) sort = Object.keys(SORTS)[0];
   const saved = ck.get('filters', {});
-  const flt = Object.assign({ showFiltered: false, hideAI: false, hidePlayed: false, onlyFavorites: false }, saved);
+  const flt = Object.assign({ showFiltered: false, showHidden: false, hideAI: false, hidePlayed: false, onlyFavorites: false }, saved);
   SECTIONS.forEach(x => flt[x.key] = Object.assign({ inc: [], exc: [] }, flt[x.key]));
   if (saved.inc) { flt.tags.inc = saved.inc; flt.tags.exc = saved.exc || []; delete flt.inc; delete flt.exc; }  /* old cookie format */
   const activeCount = () => SECTIONS.reduce((n, x) => n + flt[x.key].inc.length + flt[x.key].exc.length, 0) + flt.hideAI + flt.hidePlayed;
@@ -262,7 +263,8 @@ async function home() {
       `<div class="fsec"><h3>Other</h3><div class="checks">
         ${box('hideAI', flt.hideAI, 'Hide games that contain AI')}
         ${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}
-        ${box('showFiltered', flt.showFiltered, 'Show “hidden” games')}</div></div>
+        ${box('showFiltered', flt.showFiltered, 'Show filtered games')}
+        ${box('showHidden', flt.showHidden, 'Show hidden games')}</div></div>
       <div class="filter-actions"><button id="clearF">Clear all</button></div>`;
   };
   const save = () => { ck.set('filters', flt); drawTabs(); drawPanel(); render(); };
@@ -279,14 +281,14 @@ async function home() {
   };
   panel.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.id === 'clearF') { SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] }); flt.hideAI = flt.hidePlayed = flt.showFiltered = false; return save(); }
+    if (b.id === 'clearF') { SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] }); flt.hideAI = flt.hidePlayed = flt.showFiltered = flt.showHidden = false; return save(); }
     const f = flt[b.dataset.k], t = b.dataset.t; if (!f || t === undefined) return;
     if (f.inc.includes(t)) { f.inc = f.inc.filter(x => x !== t); f.exc.push(t); }
     else if (f.exc.includes(t)) f.exc = f.exc.filter(x => x !== t);
     else f.inc.push(t);
     save();
   };
-  panel.onchange = e => { if (['hideAI', 'hidePlayed', 'showFiltered'].includes(e.target.id)) { flt[e.target.id] = e.target.checked; save(); } };
+  panel.onchange = e => { if (['hideAI', 'hidePlayed', 'showFiltered', 'showHidden'].includes(e.target.id)) { flt[e.target.id] = e.target.checked; save(); } };
   $('#search').addEventListener('input', render);
   $('#brand').addEventListener('click', e => { e.preventDefault(); location.href = 'index.html'; location.reload(); });
 
@@ -294,8 +296,8 @@ async function home() {
   const CHUNK = 'IntersectionObserver' in window ? 64 : Infinity;   /* very old browsers get everything at once */
   const sentinel = gal.insertAdjacentElement('afterend', Object.assign(document.createElement('div'), { id: 'sentinel', style: 'height:1px' }));
   const oldBtn = $('#more'); if (oldBtn) oldBtn.remove();
-  let shownList = [], shownCount = 0, done = new Set(), favs = new Set();
-  const card = g => `<a class="card" href="game.html?g=${encodeURIComponent(g.id)}">
+  let shownList = [], shownCount = 0, done = new Set(), favs = new Set(), hid = new Set();
+  const card = g => `<a class="card${hid.has(g.id) ? ' is-hidden' : ''}" href="game.html?g=${encodeURIComponent(g.id)}">
       <div class="thumb ${covers[g.id] ? '' : 'none'}" ${covers[g.id] ? `style="background-image:url('${esc(covers[g.id])}')"` : ''}>
         ${score(g) > 70 ? `<span class="flag score">★ Index Gem</span> ` : ''}
         ${done.has(g.id) ? '<span class="played" title="Played before">✓</span>' : ''}
@@ -330,8 +332,10 @@ async function home() {
     const terms = $('#search').value.toLowerCase().split(/\s+/).filter(Boolean);
     done = new Set(played());
     favs = new Set(favorites());
+    hid = new Set(hiddenGames());
     const shown = games.filter(g =>
       (flt.showFiltered || !yes(g.filtered)) &&
+      (flt.showHidden || !hid.has(g.id)) &&
       (!flt.onlyFavorites || favs.has(g.id)) &&
       !(flt.hideAI && yes(g.contains_ai)) && !(flt.hidePlayed && done.has(g.id)) &&
       SECTIONS.every(x => {
@@ -452,7 +456,7 @@ async function gamePage() {
       ${block('Narrative', g.narrative)}
       ${block('Mechanics', g.mechanics_description)}
     </div><aside>
-      <section class="panel checks"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><label class="check"><input type="checkbox" id="favBox"> Favorite</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
+      <section class="panel checks"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><label class="check"><input type="checkbox" id="favBox"> Favorite</label><label class="check"><input type="checkbox" id="hideBox"> Hide</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
       <section class="panel scores">${ratingsTip(g, D)}<button type="button" class="info-btn" id="scoreInfoBtn" aria-expanded="false" aria-controls="scoreInfo" title="How are games scored?">?</button></section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
@@ -497,6 +501,8 @@ async function gamePage() {
   box.onchange = () => { const s = new Set(played()); box.checked ? s.add(id) : s.delete(id); ck.set('played', [...s]); };
   const fav = $('#favBox'); fav.checked = favorites().includes(id);
   fav.onchange = () => { const s = new Set(favorites()); fav.checked ? s.add(id) : s.delete(id); ck.set('favorites', [...s]); };
+  const hide = $('#hideBox'); hide.checked = hiddenGames().includes(id);
+  hide.onchange = () => { const s = new Set(hiddenGames()); hide.checked ? s.add(id) : s.delete(id); ck.set('hidden', [...s]); };
 }
 
 $('#game') ? gamePage() : home();
