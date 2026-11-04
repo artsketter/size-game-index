@@ -3,7 +3,7 @@
 /* theme */
 :root{
   color-scheme:dark;
-  --bg:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;
+  --bg:#151515;--content:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;
   --text:#e8efe9;--muted:#9db5b9;--accent:#f2b84b;
   --good:#7fd1a0;--bad:#ef7d6a;--ink:#10222b;--r:10px;
   --head:'Bricolage Grotesque','Trebuchet MS',sans-serif;
@@ -11,7 +11,7 @@
   --nav:64px}
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#F6F7F8;--panel:#e9edc9;--panel2:#F6F7F8;--line:#d6cfbd;
+  --bg:#F6F7F8;--content:#ffffff;--panel:#e9edc9;--panel2:#F6F7F8;--line:#d6cfbd;
   --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;--bad:#c0392b}
 
 /* base */
@@ -23,7 +23,7 @@ a{color:var(--accent)}
 h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
 
 /* navbar */
-.navbar{position:sticky;top:0;z-index:50;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(.75rem,3vw,2rem);background:var(--panel);border-bottom:1px solid var(--line)}
+.navbar{position:sticky;top:0;z-index:50;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(.75rem,3vw,2rem);background:var(--panel);}
 .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--text);font:700 1.3rem var(--head)}
 .shrink span{font-size:calc(1em - var(--i) * .14em)}
 .navbar input,.navsearch input{width:min(320px,48vw);padding:.5rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
@@ -32,7 +32,7 @@ h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
 .theme-toggle:hover{border-color:var(--accent)}
 
 /* home: intro */
-main{max-width:1280px;margin:0 auto;padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
+main{width:min(1280px,calc(100% - 2 * clamp(.5rem,4vw,3rem)));margin:0 auto;min-height:calc(100vh - var(--nav));background:var(--content);padding:1.5rem clamp(.75rem,3vw,2rem) 4rem}
 .intro{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.5rem}
 .intro p{margin:0 0 1rem;max-width:1000ch;font-size:1.1rem}
 .intro .intro-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
@@ -196,11 +196,11 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .orig{color:var(--muted);font-size:1.1rem}
 .layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:2rem}
 @media(max-width:820px){.layout{grid-template-columns:1fr}}
-.stage{aspect-ratio:16/10;background:var(--panel) center/contain no-repeat;border:1px solid var(--line);border-radius:var(--r)}
+.stage{aspect-ratio:16/10;background:var(--panel) center/contain no-repeat;border:1px solid var(--line);border-radius:6px}
 .strip{display:flex;gap:.5rem;margin-top:.6rem}
 .strip button{width:80px;aspect-ratio:16/10;border:2px solid var(--line);border-radius:6px;background:var(--panel) center/cover;cursor:pointer;padding:0}
 .strip button.on{border-color:var(--accent)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(6px);padding:1rem 1.25rem;margin-bottom:1rem}
 .panel h2{font-size:1.05rem;margin-bottom:.5rem}
 .panel p{margin:.3rem 0;white-space:pre-line}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem;margin:0}
