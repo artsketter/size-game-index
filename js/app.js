@@ -475,6 +475,7 @@ async function gamePage() {
         ${row('Contains AI', yes(g.contains_ai) ? 'Yes' : 'No')}
         ${row('Entry updated', esc(g.entry_last_updated))}
         ${row('Entry created', esc(g.creation_time))}
+        ${row('Submitted by', esc(list(g.submitter).join(', ')))}
       </dl></section>
       ${links ? `<section class="panel links">${links}</section>` : ''}
       ${block('Installation instructions', g.instructions)}
