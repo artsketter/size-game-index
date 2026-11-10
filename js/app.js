@@ -197,6 +197,7 @@ async function home() {
     { key: 'size_types', label: 'Size Category', field: 'size_category', any: false },
     { key: 'tags', label: 'Tags', field: 'tags', any: false },
     { key: 'interactions', label: 'Interactions', field: 'interactions', any: false },
+    { key: 'game_engine', label: 'Game Engine', field: 'game_engine', any: false },
     { key: 'art_style', label: 'Art Style', field: 'main_art_style', any: false },
     { key: 'pricing', label: 'Pricing model', field: 'pricing_model', any: true },
     { key: 'languages', label: 'Languages', field: 'languages', any: true }

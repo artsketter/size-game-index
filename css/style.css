@@ -5,14 +5,14 @@
   color-scheme:dark;
   --bg:#151515;--content:#191919;--panel:#262626;--panel2:#1f3d4a;--line:#2d5262;
   --text:#e8efe9;--muted:#9db5b9;--accent:#f2b84b;
-  --good:#7fd1a0;--bad:#ef7d6a;--ink:#10222b;--r:10px;
+  --good:#7fd1a0;--bad:#ef7d6a;--ink:#10222b;--r:10px;--shadow:#151515;
   --head:'Bricolage Grotesque','Trebuchet MS',sans-serif;
   --body:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;
   --nav:64px}
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#F6F7F8;--content:#ffffff;--panel:#e9edc9;--panel2:#F6F7F8;--line:#d6cfbd;
-  --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;--bad:#c0392b}
+  --bg:#efefef;--content:#ffffff;--panel:#e9edc9;--panel2:#F6F7F8;--line:#d6cfbd;
+  --text:#1d2b30;--muted:#5d6e72;--accent:#b9770e;--bad:#c0392b;--shadow:#c3c3c3;}
 
 /* base */
 *{box-sizing:border-box}
@@ -23,12 +23,12 @@ a{color:var(--accent)}
 h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
 
 /* navbar */
-.navbar{position:sticky;top:0;z-index:50;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(.75rem,3vw,2rem);background:var(--panel);}
+.navbar{position:sticky;top:0;z-index:50;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(.75rem,3vw,2rem);background:var(--panel);filter: drop-shadow(0 2px 4px var(--shadow))}
 .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--text);font:700 1.3rem var(--head)}
 .shrink span{font-size:calc(1em - var(--i) * .14em)}
-.navbar input,.navsearch input{width:min(320px,48vw);padding:.5rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+.navbar input,.navsearch input{width:min(320px,48vw);padding:.5rem .9rem;border-radius:999px;border:1px solid var(--line);background:var(--content);color:var(--text);font:inherit}
 .nav-right{display:flex;align-items:center;gap:.6rem}
-.theme-toggle{width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:1.1rem;cursor:pointer}
+.theme-toggle{width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--content);color:var(--text);font-size:1.1rem;cursor:pointer}
 .theme-toggle:hover{border-color:var(--accent)}
 
 /* home: intro */
@@ -232,3 +232,6 @@ dd{margin:0}
   .discord,.flag.score,.flag.score::before,.flag.score::after{animation:none}
   .spinner{animation-duration:2.4s}
 }
+
+/* snow */
+.snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
