@@ -8,6 +8,15 @@ const rich = t => esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\
   return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${bare.slice(clean.length)}`;
 });
 const plain = t => (t || '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+const SITE_NAMES = { 'x.com': 'Twitter', 'youtu.be': 'YouTube', 'youtube.com': 'YouTube', 'deviantart.com': 'DeviantArt', 'github.com': 'GitHub', 'bsky.app': 'Bluesky', 'subscribestar.com': 'SubscribeStar', 'subscribestar.adult': 'SubscribeStar', 'itch.io': 'Itch.io'};
+const siteName = u => {
+  let h; try { h = new URL(u).hostname.toLowerCase().replace(/^www\./, ''); } catch { return u; }
+  const p = h.split('.'), second = p.length > 2 && /^(co|com|org|net|ac|gov)$/.test(p[p.length - 2]);
+  const root = p.slice(second ? -3 : -2).join('.');
+  if (SITE_NAMES[root]) return SITE_NAMES[root];
+  const name = p[second ? p.length - 3 : p.length - 2] || p[0];
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 const loadingHTML = t => `<div class="loading" role="status" aria-live="polite"><span class="spinner"></span><span class="ltext">${t}</span></div>`;
 const list = v => (v || '').split('|').map(s => s.trim()).filter(Boolean);
 
@@ -446,7 +455,7 @@ async function gamePage() {
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
     (g.walkthrough ? `<a class="btn alt" href="${esc(blobUrl(id, g.walkthrough))}" target="_blank" rel="noopener">Walkthrough</a>` : '') +
-    [...new Set([...list(g.creator_links), ...list(g.creator_link)])].map(u => `<a class="btn alt" href="${esc(u)}" target="_blank" rel="noopener">Creator on ${esc(host(u))}</a>`).join('') +
+    [...new Set([...list(g.creator_links), ...list(g.creator_link)])].map(u => `<a class="btn alt" href="${esc(u)}" target="_blank" rel="noopener">Creator on ${esc(siteName(u))}</a>`).join('') +
     (g.forum_link ? `<a class="btn alt" href="${esc(g.forum_link)}" target="_blank" rel="noopener">Forum thread</a>` : '');
   el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a>
     <div class="top"><h1>${esc(g.title || id)}</h1>${g.original_title ? `<span class="orig">${esc(g.original_title)}</span>` : ''}</div>
