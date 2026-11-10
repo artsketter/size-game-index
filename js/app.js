@@ -8,7 +8,7 @@ const rich = t => esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\
   return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${bare.slice(clean.length)}`;
 });
 const plain = t => (t || '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
-const SITE_NAMES = { 'x.com': 'Twitter', 'youtu.be': 'YouTube', 'youtube.com': 'YouTube', 'deviantart.com': 'DeviantArt', 'github.com': 'GitHub', 'bsky.app': 'Bluesky', 'subscribestar.com': 'SubscribeStar', 'subscribestar.adult': 'SubscribeStar', 'itch.io': 'Itch.io'};
+const SITE_NAMES = { 'x.com': 'Twitter', 'youtu.be': 'YouTube', 'youtube.com': 'YouTube', 'deviantart.com': 'DeviantArt', 'github.com': 'GitHub', 'bsky.app': 'Bluesky', 'subscribestar.com': 'SubscribeStar', 'subscribestar.adult': 'SubscribeStar', 'itch.io': 'Itch.io', 'dlsite.com': 'DLsite'};
 const siteName = u => {
   let h; try { h = new URL(u).hostname.toLowerCase().replace(/^www\./, ''); } catch { return u; }
   const p = h.split('.'), second = p.length > 2 && /^(co|com|org|net|ac|gov)$/.test(p[p.length - 2]);
@@ -273,7 +273,7 @@ async function home() {
       `<div class="fsec"><h3>Other</h3><div class="checks">
         ${box('hideAI', flt.hideAI, 'Hide games that contain AI')}
         ${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}
-        ${box('showFiltered', flt.showFiltered, 'Show filtered games')}
+        ${box('showFiltered', flt.showFiltered, 'Show obfuscated content')}
         ${box('showHidden', flt.showHidden, 'Show hidden games')}</div></div>
       <div class="filter-actions"><button id="clearF">Clear all</button></div>`;
   };
