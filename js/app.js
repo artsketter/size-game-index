@@ -143,8 +143,8 @@ async function loadGame(id, files) {
   } catch { return null; }
 }
 function thumbs(g, onlyFirst) {
-  const names = g.thumbnails ? list(g.thumbnails) : g._files.filter(n => /^thumb[1-5]\.(jpe?g|png|webp|gif|svg)$/i.test(n)).sort();
-  return names.slice(0, onlyFirst ? 1 : 5).map(n => gameUrl(g.id, n));
+  const names = g.thumbnails ? list(g.thumbnails) : g._files.filter(n => /^thumb\d+\.(jpe?g|png|webp|gif|svg)$/i.test(n)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return (onlyFirst ? names.slice(0, 1) : names).map(n => gameUrl(g.id, n));
 }
 const bar = n => `<span class="chain" role="img" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i === n ? 'on' : ''}"></i>`).join('')}</span>`;
 const ring = n => {
