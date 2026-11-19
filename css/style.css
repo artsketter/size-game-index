@@ -213,6 +213,7 @@ dd{margin:0}
 .check input{width:1.2rem;height:1.2rem;accent-color:var(--good)}
 .check-note{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem;line-height:1.4}
 .back{display:inline-block;margin-bottom:1rem}
+.multiline{white-space:pre-line}
 
 /* score info */
 .panel.scores{position:relative;padding-bottom:2.4rem}

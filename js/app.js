@@ -481,7 +481,7 @@ async function gamePage() {
         ${row('Authors', esc(g.authors))}
         ${row('Release date', esc(g.release_date))}
         ${row('Last updated', esc(g.last_updated))}
-        ${row('Latest update', esc(g.latest_content_update))}
+        ${row('Latest update', g.latest_content_update ? `<span class="multiline">${rich(g.latest_content_update)}</span>` : '')}
         ${row('Contains AI', yes(g.contains_ai) ? 'Yes' : 'No')}
         ${row('Entry updated', esc(g.entry_last_updated))}
         ${row('Entry created', esc(g.creation_time))}
