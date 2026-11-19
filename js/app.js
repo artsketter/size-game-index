@@ -230,12 +230,12 @@ async function home() {
   };
 
   /* Extra info shown on each card depends on the active sorting tab */
-  const line = (label, v, boxed) => v ? `<div class="meta"><span class="${boxed ? 'boxed' : ''}">${label}</span> ${esc(v)}</div>` : '';
+  const line = (label, v, boxed, multi) => v ? `<div class="meta${multi ? ' hang' : ''}"><span class="${boxed ? 'boxed' : ''}">${label}</span>${multi ? `<div class="hang-text">${esc(v)}</div>` : ' ' + esc(v)}</div>` : '';
   const langs = g => g.languages ? `<div class="meta flagrow">${flags(g.languages)}</div>` : '';
   const basic = g => (g.game_engine || g.languages) ? `<div class="meta split">${g.game_engine ? `<span class="engine">${esc(g.game_engine)}</span>` : '<span></span>'}${flags(g.languages)}</div>` : '';
   const stat = (label, n) => `<div class="rate"><span>${label} ${bar(n)}</span></div>`;
   const META = {
-    'Latest content updates': g => line('Update', g.latest_content_update, true) + line('Updated', g.last_updated, true) + langs(g),
+    'Latest content updates': g => line('Update', g.latest_content_update, true, true) + line('Updated', g.last_updated, true) + langs(g),
     'Newest release': g => line('By', g.authors) + line('Released', g.release_date) + langs(g),
     'Newest added': g => line('Added', g.creation_time) + basic(g),
     'Great art': g => stat('Art', num(g.art_rating, 5)) + basic(g),

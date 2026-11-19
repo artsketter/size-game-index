@@ -123,6 +123,9 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .meta span.engine{background:#c0392b;color:#fff;font-weight:600;font-size:.8rem;padding:.05rem .55rem;border-radius:4px;margin:0}
 .meta.split{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
 .meta.flagrow{display:flex;justify-content:flex-end}
+.meta.hang{display:flex;align-items:flex-start;gap:.4rem}
+.meta.hang > span{flex-shrink:0;margin:0}
+.hang-text{min-width:0;white-space:pre-line;overflow-wrap:anywhere}
 .flags{display:inline-flex;flex-wrap:wrap;gap:.3rem;align-items:center}
 .flags img{display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .empty{text-align:center;color:var(--muted);padding:3rem 0}
