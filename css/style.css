@@ -86,7 +86,9 @@ main{width:min(1280px,calc(100% - 2 * clamp(.5rem,4vw,3rem)));margin:0 auto;min-
 
 .tabsep{width:1px;align-self:stretch;margin:.25rem .3rem;background:var(--line)}
 .filter-panel{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--line)}
-.filter-panel small{display:block;color:var(--muted);margin-bottom:.6rem}
+.filter-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.8rem}
+.filter-head small{display:block;color:var(--muted);margin:0}
+.filter-head button{flex-shrink:0;white-space:nowrap;background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;font-size:.9rem;text-decoration:underline}
 .fsec{margin-bottom:1rem}
 .fsec h3{font-size:.95rem;color:var(--muted);margin-bottom:.4rem}
 .chips{display:flex;flex-wrap:wrap;gap:.4rem}
@@ -97,8 +99,7 @@ button.chip.inc::before{content:"+ "}
 button.chip.exc{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
 button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block}
 .checks{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem}
-.filter-actions{display:flex;gap:1rem;align-items:center;margin-top:.9rem;font-size:.9rem}
-.filter-actions button{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;text-decoration:underline}
+
 
 /* gallery cards */
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.25rem}

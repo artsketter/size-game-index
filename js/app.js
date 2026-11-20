@@ -279,7 +279,7 @@ async function home() {
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
-    panel.innerHTML = `<small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small>` +
+    panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small><button id="clearF">Clear all</button></div>` +
       options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t =>
         `<button class="chip ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}">${esc(t)}</button>`).join('') || '<span class="chip">None yet</span>'}</div></div>`).join('') +
       `<div class="fsec"><h3>Other</h3><div class="checks">
@@ -287,7 +287,7 @@ async function home() {
         ${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}
         ${box('showFiltered', flt.showFiltered, 'Show obfuscated content')}
         ${box('showHidden', flt.showHidden, 'Show hidden games')}</div></div>
-      <div class="filter-actions"><button id="clearF">Clear all</button></div>`;
+      `;
   };
   const save = () => { ck.set('filters', flt); drawTabs(); drawPanel(); render(); };
 
@@ -303,7 +303,7 @@ async function home() {
   };
   panel.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.id === 'clearF') { SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] }); flt.hideAI = flt.hidePlayed = flt.showFiltered = flt.showHidden = false; return save(); }
+    if (b.id === 'clearF') { SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] }); return save(); }
     const f = flt[b.dataset.k], t = b.dataset.t; if (!f || t === undefined) return;
     if (f.inc.includes(t)) { f.inc = f.inc.filter(x => x !== t); f.exc.push(t); }
     else if (f.exc.includes(t)) f.exc = f.exc.filter(x => x !== t);
@@ -463,7 +463,7 @@ async function gamePage() {
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
   const many = v => list(v).map(one).join(' ');
-  const fchips = (key, v) => list(v).map(t => `<a class="chip chip-link" href="./?${key}=${encodeURIComponent(t)}" title="Show only games with this">${esc(t)}</a>`).join(' ');
+  const fchips = (key, v) => list(v).map(t => `<a class="chip chip-link" href="./?${key}=${encodeURIComponent(t)}" title="Show games with this tag">${esc(t)}</a>`).join(' ');
   const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
