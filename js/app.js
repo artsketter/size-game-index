@@ -174,10 +174,12 @@ async function home() {
   gal.innerHTML = loadingHTML('Loading games...');
   const label = $('.ltext', gal);
   const weightsReady = loadScoreWeights();
+  const tagDescReady = loadTagDescriptions();
   let games;
   try { games = await loadAllGames((n, total) => { if (label) label.textContent = `Loading games... ${n}/${total}`; }); }
   catch (e) { gal.innerHTML = ''; $('#empty').textContent = e.message; $('#empty').hidden = false; return; }
   await weightsReady;
+  const TD = await tagDescReady;
   let savedBadges = null;
   if ((performance.getEntriesByType('navigation')[0] || {}).type === 'back_forward') { try { savedBadges = JSON.parse(sessionStorage.getItem('gs-badges')); } catch {} }
   const badges = Object.assign({}, savedBadges);
@@ -280,8 +282,10 @@ async function home() {
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
     panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small><button id="clearF">Clear all</button></div>` +
-      options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t =>
-        `<button class="chip ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}">${esc(t)}</button>`).join('') || '<span class="chip">None yet</span>'}</div></div>`).join('') +
+      options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t => {
+      const d = TD[t.trim().toLowerCase()];
+      return `<button class="chip${d ? ' tip' : ''} ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}"${d ? ` data-tip="${esc(d)}"` : ''}>${esc(t)}</button>`;
+      }).join('') || '<span class="chip">None yet</span>'}</div></div>`).join('') +
       `<div class="fsec"><h3>Other</h3><div class="checks">
         ${box('hideAI', flt.hideAI, 'Hide games that contain AI')}
         ${box('hidePlayed', flt.hidePlayed, 'Hide games I’ve already played')}
@@ -406,7 +410,7 @@ async function home() {
 }
 
 /* Score weights */
-const SCORE_WEIGHTS = 'score_weight.csv';
+const SCORE_WEIGHTS = 'data/score_weight.csv';
 async function loadScoreWeights() {
   try {
     const res = await fetch(SCORE_WEIGHTS);
@@ -432,6 +436,19 @@ async function loadRatingDescriptions() {
   }
   return {};   /* no file found: ratings simply have no tooltip */
 }
+/* Tag descriptions */
+async function loadTagDescriptions() {
+  try {
+    const res = await fetch('descriptions/tag_desc.csv'); if (!res.ok) return {};
+    const out = {};
+    parseCSV((await res.text()).replace(/^\uFEFF/, '')).slice(1).forEach(r => {
+      const k = (r[0] || '').trim().toLowerCase(), v = (r[1] || '').trim();
+      if (k && v) out[k] = v;
+    });
+    return out;
+  } catch (e) { console.warn('Tag descriptions failed to load.', e); return {}; }
+}
+
 const ratingsTip = (g, D) => `<div class="rate">${[
   ['Art', 'art_rating', 5, bar], ['Mechanics', 'mechanic_rating', 5, bar], ['Animation', 'animation_rating', 5, bar], ['Size focus', 'size_focus', 3, ring]
 ].filter(([, key]) => !(key === 'animation_rating' && /^\s*0\s*$/.test(g[key] || ''))).map(([label, key, max, draw]) => {
@@ -459,11 +476,16 @@ async function gamePage() {
   const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: '/game/' + id, title: g.title || id });
   document.readyState === 'complete' ? go() : addEventListener('load', go);
   const D = await loadRatingDescriptions();
+  const TD = await loadTagDescriptions();
   const imgs = thumbs(g);
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
   const many = v => list(v).map(one).join(' ');
-  const fchips = (key, v) => list(v).map(t => `<a class="chip chip-link" href="./?${key}=${encodeURIComponent(t)}" title="Show games with this tag">${esc(t)}</a>`).join(' ');
+  const fchips = (key, v) => list(v).map(t => {
+  const d = TD[t.trim().toLowerCase()];
+  return `<a class="chip chip-link${d ? ' tip' : ''}" href="./?${key}=${encodeURIComponent(t)}"` +
+    (d ? ` data-tip="${esc(d)}"` : ` title="Show only games with this"`) + `>${esc(t)}</a>`;
+}).join(' ');
   const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
@@ -488,7 +510,7 @@ async function gamePage() {
         ${row('Interactions', fchips('interactions', g.interactions))}
         ${row('Status', one(g.development_status))}
         ${row('Pricing', fchips('pricing', g.pricing_model))}
-        ${row('Engine', fchips('engine', g.game_engine))}
+        ${row('Engine', fchips('game_engine', g.game_engine))}
         ${row('Art style', fchips('art_style', g.main_art_style))}
         ${row('Languages', fchips('languages', g.languages))}
         ${row('Authors', esc(g.authors))}
