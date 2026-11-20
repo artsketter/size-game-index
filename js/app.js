@@ -206,6 +206,7 @@ async function home() {
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
     { key: 'size_types', label: 'Size Category', field: 'size_category', any: false },
+    { key: 'time_to_complete', label: 'Time to Complete', field: 'time_to_complete', any: false },
     { key: 'tags', label: 'Tags', field: 'tags', any: false },
     { key: 'interactions', label: 'Interactions', field: 'interactions', any: false },
     { key: 'game_engine', label: 'Game Engine', field: 'game_engine', any: false },
