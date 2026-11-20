@@ -504,7 +504,7 @@ async function gamePage() {
       <section class="panel checks"><label class="check"><input type="checkbox" id="playedBox">Mark as played</label><label class="check"><input type="checkbox" id="favBox"> Favorite</label><label class="check"><input type="checkbox" id="hideBox"> Hide</label><small class="check-note">Played games are stored in your browser. New updates for played games toggle this box off and add a persisting “New Update!” popup until you visit the page again.</small></section>
       <section class="panel scores">${ratingsTip(g, D)}<button type="button" class="info-btn" id="scoreInfoBtn" aria-expanded="false" aria-controls="scoreInfo" title="How are games scored?">?</button></section>
       <section class="panel"><dl>
-        ${row('Time to complete', one(g.time_to_complete))}
+        ${row('Time to complete', fchips('time_to_complete', g.time_to_complete))}
         ${row('Size Category', fchips('size_types', g.size_category))}
         ${row('Tags', fchips('tags', g.tags))}
         ${row('Interactions', fchips('interactions', g.interactions))}
