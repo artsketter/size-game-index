@@ -247,6 +247,18 @@ async function home() {
   const flt = Object.assign({ showFiltered: false, showHidden: false, hideAI: false, hidePlayed: false, onlyFavorites: false }, saved);
   SECTIONS.forEach(x => flt[x.key] = Object.assign({ inc: [], exc: [] }, flt[x.key]));
   if (saved.inc) { flt.tags.inc = saved.inc; flt.tags.exc = saved.exc || []; delete flt.inc; delete flt.exc; }  /* old cookie format */
+  /* clickable tag links */
+  const linkParams = new URLSearchParams(location.search);
+  const linked = SECTIONS.find(x => linkParams.has(x.key));
+  if (linked) {
+    SECTIONS.forEach(x => flt[x.key] = { inc: [], exc: [] });
+    flt.hideAI = flt.hidePlayed = flt.onlyFavorites = false;
+    flt[linked.key].inc = [linkParams.get(linked.key)];
+    if (sort === 'Favorites') sort = Object.keys(SORTS)[0];
+    ck.set('filters', flt);
+    SECTIONS.forEach(x => linkParams.delete(x.key));
+    history.replaceState(null, '', location.pathname + (linkParams.toString() ? '?' + linkParams : ''));
+  }
   const activeCount = () => SECTIONS.reduce((n, x) => n + flt[x.key].inc.length + flt[x.key].exc.length, 0) + flt.hideAI + flt.hidePlayed;
   const q0 = new URLSearchParams(location.search).get('q'); if (q0) $('#search').value = q0;
 
@@ -451,6 +463,7 @@ async function gamePage() {
   const row = (k, v) => v ? `<dt>${k}</dt><dd>${v}</dd>` : '';
   const one = v => v ? `<span class="chip">${esc(v)}</span>` : '';
   const many = v => list(v).map(one).join(' ');
+  const fchips = (key, v) => list(v).map(t => `<a class="chip chip-link" href="./?${key}=${encodeURIComponent(t)}" title="Show only games with this">${esc(t)}</a>`).join(' ');
   const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
   const block = (h, t) => t ? `<section class="panel"><h2>${h}</h2><p>${rich(t)}</p></section>` : '';
   const links = list(g.game_links).map(u => `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Play / get on ${esc(host(u))}</a>`).join('') +
@@ -470,14 +483,14 @@ async function gamePage() {
       <section class="panel scores">${ratingsTip(g, D)}<button type="button" class="info-btn" id="scoreInfoBtn" aria-expanded="false" aria-controls="scoreInfo" title="How are games scored?">?</button></section>
       <section class="panel"><dl>
         ${row('Time to complete', one(g.time_to_complete))}
-        ${row('Size Category', many(g.size_category))}
-        ${row('Tags', many(g.tags))}
-        ${row('Interactions', many(g.interactions))}
+        ${row('Size Category', fchips('size_types', g.size_category))}
+        ${row('Tags', fchips('tags', g.tags))}
+        ${row('Interactions', fchips('interactions', g.interactions))}
         ${row('Status', one(g.development_status))}
-        ${row('Pricing', one(g.pricing_model))}
-        ${row('Engine', one(g.game_engine))}
-        ${row('Art style', one(g.main_art_style))}
-        ${row('Languages', many(g.languages))}
+        ${row('Pricing', fchips('pricing', g.pricing_model))}
+        ${row('Engine', fchips('engine', g.game_engine))}
+        ${row('Art style', fchips('art_style', g.main_art_style))}
+        ${row('Languages', fchips('languages', g.languages))}
         ${row('Authors', esc(g.authors))}
         ${row('Release date', esc(g.release_date))}
         ${row('Last updated', esc(g.last_updated))}

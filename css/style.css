@@ -56,7 +56,7 @@ main{width:min(1280px,calc(100% - 2 * clamp(.5rem,4vw,3rem)));margin:0 auto;min-
 
 /* social icons */
 .social{display:flex;gap:.5rem;flex-shrink:0;align-items:center;color:var(--muted);font-size:10px}
-.social a{display:grid;place-items:center;width:2.2rem;height:2.2rem;padding-left:1px;border-radius:50%;border:1px solid var(--line);color:var(--muted)}
+.social a{display:grid;place-items:center;width:2.2rem;height:2.2rem;padding-bottom:1px;border-radius:50%;border:1px solid var(--line);color:var(--muted)}
 .social a:hover{color:var(--accent);border-color:var(--accent)}
 .discord{animation:shake 3.4s linear infinite}
 @keyframes shake{
@@ -217,6 +217,9 @@ dd{margin:0}
 .check-note{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem;line-height:1.4}
 .back{display:inline-block;margin-bottom:1rem}
 .multiline{white-space:pre-line}
+/* clickable tag links */
+a.chip-link{text-decoration:none;transition:background-color .15s,border-color .15s}
+a.chip-link:hover,a.chip-link:focus-visible{background:color-mix(in srgb,var(--accent) 18%,var(--panel2));border-color:var(--accent)}
 
 /* score info */
 .panel.scores{position:relative;padding-bottom:2.4rem}
