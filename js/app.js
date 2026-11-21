@@ -207,7 +207,7 @@ async function home() {
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
     { key: 'size_types', label: 'Size Category', field: 'size_category', any: true },
     { key: 'time_to_complete', label: 'Time to Complete', field: 'time_to_complete', any: true },
-    { key: 'tags', label: 'Tags', field: 'tags', any: true },
+    { key: 'tags', label: 'Tags', field: 'tags', any: false },
     { key: 'interactions', label: 'Interactions', field: 'interactions', any: true },
     { key: 'game_engine', label: 'Game Engine', field: 'game_engine', any: true },
     { key: 'art_style', label: 'Art Style', field: 'main_art_style', any: true },
@@ -293,7 +293,7 @@ async function home() {
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort(sortFor(x.key)) }));
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
-    panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. Saved in localstorage on this browser.</small><button id="clearF">Clear all</button></div>` +
+    panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. Selected tags will only show exact matches, but other filters will show games that match ANY selected value. Saved in localstorage on this browser.</small><button id="clearF">Clear all</button></div>` +
       options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t => {
       const d = TD[t.trim().toLowerCase()];
       return `<button class="chip${d ? ' tip' : ''} ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}"${d ? ` data-tip="${esc(d)}"` : ''}>${esc(t)}</button>`;
