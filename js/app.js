@@ -266,7 +266,16 @@ async function home() {
   const q0 = new URLSearchParams(location.search).get('q'); if (q0) $('#search').value = q0;
 
   const tabs = $('#tabs'), panel = $('#filterPanel');
+  
   const drawTabs = () => {
+  const activeFilters = SECTIONS.map(x => {
+  const { inc, exc } = flt[x.key];
+  if (!inc.length && !exc.length) return '';
+  const chip = (cls, t) => `<button class="chip ${cls}" data-rm="1" data-k="${x.key}" data-t="${esc(t)}" title="Click to remove">${esc(t)}</button>`;
+  return `<div class="af-row"><b>${x.label}:</b> ` +
+    inc.map(t => chip('inc', t)).join(' ') + ' ' +
+    exc.map(t => chip('exc', t)).join(' ') + `</div>`;
+}).join('');
   tabs.innerHTML =
     `<div class="tabs-row">` +
       Object.keys(SORTS).map(k => `<button data-s="${esc(k)}" class="${k === sort ? 'on' : ''}">${esc(k)}</button>`).join('') +
@@ -277,7 +286,8 @@ async function home() {
         (CFG.submitForm ? `<a class="tablink" href="${esc(CFG.submitForm)}" target="_blank" rel="noopener">Submit a new game / update</a>` : '') +
         `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>` +
       `</span>` +
-    `</div>`;
+    `</div>` +
+    (activeFilters ? `<div class="active-filters"><small>Active filters</small>${activeFilters}</div>` : '');
 };
   /* convert time_to_complete into minutes for sorting */
   const durationMins = s => {
@@ -293,7 +303,7 @@ async function home() {
   const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort(sortFor(x.key)) }));
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
-    panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. Selected tags will only show exact matches, but other filters will show games that match ANY selected value. Saved in localstorage on this browser.</small><button id="clearF">Clear all</button></div>` +
+    panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. "Tags" will only show exact matches, but other filters will show games that match ANY selected value. Saved in localstorage on this browser.</small><button id="clearF">Clear all</button></div>` +
       options.map(x => `<div class="fsec"><h3>${x.label}</h3><div class="chips">${x.all.map(t => {
       const d = TD[t.trim().toLowerCase()];
       return `<button class="chip${d ? ' tip' : ''} ${flt[x.key].inc.includes(t) ? 'inc' : flt[x.key].exc.includes(t) ? 'exc' : ''}" data-k="${x.key}" data-t="${esc(t)}"${d ? ` data-tip="${esc(d)}"` : ''}>${esc(t)}</button>`;
@@ -309,6 +319,11 @@ async function home() {
 
   tabs.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rm) {
+      const f = flt[b.dataset.k], t = b.dataset.t;
+      if (f) { f.inc = f.inc.filter(x => x !== t); f.exc = f.exc.filter(x => x !== t); }
+      return save();
+    }
     if (b.dataset.f) 
       { panel.hidden = !panel.hidden; } 
     else if (b.dataset.fav)
