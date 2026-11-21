@@ -204,6 +204,7 @@ async function home() {
   games.forEach(g => { if (pending.has(g.id)) badges[g.id] = 'update'; });
   const covers = {};
   games.forEach(g => covers[g.id] = thumbs(g, true)[0]);
+  const gamesFound = n => `${n} game${n === 1 ? '' : 's'} found`;
   const SECTIONS = [  /* filter sections; any:true = a game matches if it has ANY required value */
     { key: 'size_types', label: 'Size Category', field: 'size_category', any: true },
     { key: 'time_to_complete', label: 'Time to Complete', field: 'time_to_complete', any: true },
@@ -287,7 +288,7 @@ async function home() {
         `<button class="filters ${panel.hidden ? '' : 'on'}" data-f="1">Filters${activeCount() ? ' (' + activeCount() + ')' : ''}</button>` +
       `</span>` +
     `</div>` +
-    (activeFilters ? `<div class="active-filters"><small>Active filters</small>${activeFilters}</div>` : '');
+    (activeFilters ? `<div class="active-filters"><div class="af-head"><small>Active filters</small><small class="af-count" id="afCount">${gamesFound(shownList.length)}</small></div>${activeFilters}</div>` : '');
 };
   /* convert time_to_complete into minutes for sorting */
   const durationMins = s => {
@@ -417,6 +418,7 @@ async function home() {
       shown.sort((a, b) => rank(a) - rank(b));
     }
     shownList = shown;
+    const afc = $('#afCount'); if (afc) afc.textContent = gamesFound(shown.length);
     shownCount = 0;
     gal.innerHTML = '';
     addChunk();
