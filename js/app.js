@@ -279,7 +279,18 @@ async function home() {
       `</span>` +
     `</div>`;
 };
-  const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort((a, b) => a.localeCompare(b)) }));
+  /* convert time_to_complete into minutes for sorting */
+  const durationMins = s => {
+    const t = s.toLowerCase().trim();
+    const m = t.match(/(\d+(?:\.\d+)?)/);
+    if (!m) return Infinity; /* "endless", "varies", etc. go last */
+    const unit = /week/.test(t) ? 10080 : /day/.test(t) ? 1440 : /hour|hr/.test(t) ? 60 : 1;
+    return +m[1] * unit - (t.startsWith('<') ? 0.5 : 0);   /* less than values go first */
+  };
+  const sortFor = key => key === 'time_to_complete'
+    ? (a, b) => durationMins(a) - durationMins(b) || a.localeCompare(b)
+    : (a, b) => a.localeCompare(b);
+  const options = SECTIONS.map(x => ({ ...x, all: [...new Set(games.flatMap(g => g._v[x.key]))].sort(sortFor(x.key)) }));
   const drawPanel = () => {
     const box = (id, on, label) => `<label class="check"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
     panel.innerHTML = `<div class="filter-head"><small>Click a value once to require it, twice to hide games that have it, a third time to clear. For Pricing model and Languages, requiring several values shows games matching any of them. Saved in a cookie on this browser.</small><button id="clearF">Clear all</button></div>` +
