@@ -524,7 +524,7 @@ async function gamePage() {
   el.innerHTML = `<a class="back" href="index.html">← Back to gallery</a>
     <div class="top"><h1>${esc(g.title || id)}</h1>${g.original_title ? `<span class="orig">${esc(g.original_title)}</span>` : ''}</div>
     <div class="layout"><div>
-      ${imgs.length ? `<div class="stage" id="stage" style="background-image:url('${esc(imgs[0])}')"></div>
+      ${imgs.length ? `<div class="stage-wrap"><div class="stage" id="stage" style="background-image:url('${esc(imgs[0])}')"></div>${imgs.length > 1 ? `<button type="button" class="stage-nav prev" data-dir="-1" aria-label="Previous image">‹</button><button type="button" class="stage-nav next" data-dir="1" aria-label="Next image">›</button>` : ''}</div>
       <div class="strip">${imgs.map((u, i) => `<button class="${i ? '' : 'on'}" data-u="${esc(u)}" style="background-image:url('${esc(u)}')" aria-label="Image ${i + 1}"></button>`).join('')}</div>` : '<div class="stage"></div>'}
       ${block('Summary', g.summary)}
       ${block('Narrative', g.narrative)}
@@ -564,11 +564,23 @@ async function gamePage() {
   infoBtn.onclick = () => setInfo(info.hidden);
   info.querySelector('.close').onclick = () => setInfo(false);
   addEventListener('keydown', e => { if (e.key === 'Escape') setInfo(false); });
-  el.addEventListener('click', e => {
-    const b = e.target.closest('.strip button'); if (!b) return;
-    $('#stage').style.backgroundImage = `url('${b.dataset.u}')`;
-    el.querySelectorAll('.strip button').forEach(x => x.classList.toggle('on', x === b));
-  });
+  const stripBtns = [...el.querySelectorAll('.strip button')];
+const showImage = i => {
+  const b = stripBtns[(i + stripBtns.length) % stripBtns.length]; if (!b) return;
+  $('#stage').style.backgroundImage = `url('${b.dataset.u}')`;
+  stripBtns.forEach(x => x.classList.toggle('on', x === b));
+};
+el.addEventListener('click', e => {
+  const n = e.target.closest('.stage-nav');
+  if (n) return showImage(stripBtns.findIndex(x => x.classList.contains('on')) + +n.dataset.dir);
+  const b = e.target.closest('.strip button');
+  if (b) showImage(stripBtns.indexOf(b));
+});
+addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey || /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') showImage(stripBtns.findIndex(x => x.classList.contains('on')) + 1);
+  if (e.key === 'ArrowLeft') showImage(stripBtns.findIndex(x => x.classList.contains('on')) - 1);
+});
   resetUpdatedPlayed([g], ck.get('seen', null));
   const pend = ck.get('pending', []);   /* visiting the page clears its persistent update badge */
   if (pend.includes(id)) ck.set('pending', pend.filter(x => x !== id));

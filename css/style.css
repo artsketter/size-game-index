@@ -213,8 +213,15 @@ button.chip.exc::before{content:"− ";text-decoration:none;display:inline-block
 .layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:2rem}
 @media(max-width:820px){.layout{grid-template-columns:1fr}}
 .stage{aspect-ratio:16/10;background:var(--panel) center/contain no-repeat;border:1px solid var(--line);border-radius:6px}
-.strip{display:flex;gap:.5rem;margin-top:.6rem}
-.strip button{width:80px;aspect-ratio:16/10;border:2px solid var(--line);border-radius:6px;background:var(--panel) center/cover;cursor:pointer;padding:0}
+.stage-wrap{position:relative}
+.stage-nav{position:absolute;top:1px;bottom:1px;width:2.4rem;display:grid;place-items:center;padding:0 0 .15rem;border:0;background:color-mix(in srgb,var(--panel) 55%,transparent);color:var(--text);font-size:1.8rem;line-height:1;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s,background-color .15s}
+.stage-wrap:hover .stage-nav,.stage-wrap:has(.stage-nav:focus-visible) .stage-nav{opacity:.6;pointer-events:auto}
+.stage-wrap .stage-nav:hover,.stage-wrap .stage-nav:focus-visible{opacity:1;background:color-mix(in srgb,var(--panel) 85%,transparent);color:var(--accent)}
+.stage-nav.prev{left:1px;border-radius:5px 0 0 5px}
+.stage-nav.next{right:1px;border-radius:0 5px 5px 0}
+@media(hover:none){.stage-nav{opacity:.6;pointer-events:auto}}
+.strip{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-top:.3rem;margin-bottom:.3rem}
+.strip button{width:80px;aspect-ratio:16/10;border:2px solid var(--line);border-radius:2px;background:var(--panel) center/cover;cursor:pointer;padding:0}
 .strip button.on{border-color:var(--accent)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(6px);padding:1rem 1.25rem;margin-bottom:1rem}
 .panel h2{font-size:1.05rem;margin-bottom:.5rem}
